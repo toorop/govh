@@ -1,4 +1,4 @@
-package govhBck
+package main
 
 type Cmd struct {
 	Domain string

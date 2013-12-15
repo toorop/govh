@@ -1,4 +1,4 @@
-package ovh
+package govh
 
 import (
 	"encoding/json"
@@ -30,8 +30,8 @@ func AuthGetConsumerKey(k Keyring) (ck string, link string, err error) {
 	}
 	client := &http.Client{}
 
-	body := "{\"accessRules\":[{\"method\":\"GET\",\"path\":\"/*\"},{\"method\":\"GET\",\"path\":\"/*\"},{\"method\":\"DELETE\",\"path\":\"/*\"},{\"method\":\"PUT\",\"path\":\"/*\"},{\"method\":\"GET\",\"path\":\"/*\"} ]}"
-	url := fmt.Sprintf("%s/auth/credential", API_URI)
+	body := "{\"accessRules\":[{\"method\":\"GET\",\"path\":\"/*\"},{\"method\":\"POST\",\"path\":\"/*\"},{\"method\":\"DELETE\",\"path\":\"/*\"},{\"method\":\"PUT\",\"path\":\"/*\"},{\"method\":\"DELETE\",\"path\":\"/*\"} ]}"
+	url := fmt.Sprintf("%s/auth/credential", API_BASE)
 
 	req, err := http.NewRequest("POST", url, strings.NewReader(body))
 	req.Header.Add("User-Agent", "Govh (https://github.com/Toorop/govh)")
