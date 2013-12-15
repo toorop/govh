@@ -1,8 +1,8 @@
 Govh
 ====
 
-Go package to consume OVH API
+Go package and CLI client to consume OVH API
 
-Work in progress....
-
+WARNING Work in progress, do not use !!!
+-------
 
