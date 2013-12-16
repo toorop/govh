@@ -4,110 +4,99 @@ import (
 	"flag"
 	"fmt"
 	"github.com/Toorop/govh"
-	//"github.com/toqueteos/webbrowser"
-	//"github.com/wsxiaoys/terminal"
+	"github.com/toqueteos/webbrowser"
+	"github.com/wsxiaoys/terminal"
 	//"github.com/wsxiaoys/terminal/color"
-	"encoding/json"
+	"bufio"
+	//"encoding/json"
 	"os"
+	//"runtime"
 )
 
 const (
 	OVH_APP_KEY    = "SECRET"
 	OVH_APP_SECRET = "SECRET"
+	NL             = "\r\n"
 )
 
 var (
-	ck           string // consumer key
-	outputFormat string
-	keyring      govh.Keyring
-	cmd          Cmd
+	ck  string // consumer key
+	cmd Cmd
 )
 
 func init() {
-
-	// Check and load config
-	// export OVH_CONSUMER_KEY="WYAUsR31Z3dT9Y5f0arTHeZwpFRdcnz2"
-
-	keyring.AppKey = OVH_APP_KEY
-	keyring.AppSecret = OVH_APP_SECRET
-	//flag.StringVar(&keyring.ConsumerKey, "ck", "", "Consumer Key")
-
 	flag.StringVar(&ck, "ck", "", "Consumer Key")
-	flag.StringVar(&outputFormat, "of", "JSON", "Output format")
+	//flag.StringVar(&outputFormat, "of", "JSON", "Output format")
 	flag.Parse()
+
+	if len(flag.Args()) > 0 {
+		cmd = Cmd{
+			Domain: flag.Arg(0),
+			Action: flag.Arg(1),
+			Args:   flag.Args(),
+		}
+	}
 
 	// WYAUsR31Z3dT9Y5f0arTHeZwpFRdcnz2
 	ck = os.Getenv("OVH_CONSUMER_KEY")
 
-	// No CK
-	if len(ck) == 0 {
-		dieError("No consumer key found")
-	}
-
-	//fmt.Println(ck)
-
-	/*if len(flag.Args()) > 1 {
-		cmd = Cmd{
-			Domain: flag.Arg(0),
-			Action: flag.Arg(1),
-		}
-	}*/
-
-	/*// Is there a consumer key ?
-	if len(keyring.ConsumerKey) == 0 {
-		// Check ENV
-		keyring.ConsumerKey = os.Getenv("OVH_CONSUMER_KEY")
-	}
-
 	// if No ConsumerKey, request one
-	if len(keyring.ConsumerKey) == 0 {
-		fmt.Println("\r\nNo consummer key found. We will request one ....\r\n")
-		ck, link, err := govh.AuthGetConsumerKey(keyring)
+	if len(ck) == 0 {
+		var r []byte
+
+		terminal.Stdout.Clear().Move(0, 0).Color("r").
+			Print("No consumer key found in environnement vars !").Nl().Nl().Reset()
+		for {
+			fmt.Print("Have you a valid Consumer Key for that app ? (y/n) : ")
+
+			r, _, _ = bufio.NewReader(os.Stdin).ReadLine()
+			if r[0] == 110 || r[0] == 121 {
+				break
+			}
+		}
+		// Yes
+		if r[0] == 121 {
+			fmt.Println("Run the following command :")
+			fmt.Println("On WINDOWS : SET OVH_CONSUMER_KEY=your_consumer_key")
+			fmt.Println("On Linux/MacOs/*BSD : export OVH_CONSUMER_KEY=your_consumer_key")
+			os.Exit(0)
+		}
+
+		ck, link, err := govh.AuthGetConsumerKey(OVH_APP_KEY)
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Your consumer key is %s\r\n\r\n", ck)
-		fmt.Println("You need to validate it :")
-		fmt.Printf("\t- If you have a browser available on this machine it will open to the validation page.\n\t- If not copy and past the link below in a browser to validate your key :\r\n%s\r\n", link)
+		fmt.Print("\r\nYour consumer key is : ")
+		terminal.Stdout.Color("g").Print(ck).Nl().Reset().Nl()
+		fmt.Println("Now you need to validate it :")
+		fmt.Printf("\t- If you have a browser available on this machine it will open to the validation page.\n\t- If not copy and paste the link below in a browser to validate your key :\r\n\r\n%s\r\n", link)
 		webbrowser.Open(link)
-		fmt.Printf("\n\nWhen it will be done relaunch govh with parameter -ck:\n\tgovh [ACTION] -ck %s\n\n\n", ck)
+		fmt.Println("\r\nWhen it will be done run the following command : \r\n")
+		fmt.Printf("On WINDOWS : SET OVH_CONSUMER_KEY=%s\r\n", ck)
+		fmt.Printf("On Linux/MacOs/*BSD : export OVH_CONSUMER_KEY=%s\r\n", ck)
+		fmt.Println("and run ovh cli app.\r\n")
 		os.Exit(0)
-	}*/
+	}
 }
 
 // Main
 func main() {
-	govh := govh.New(OVH_APP_KEY, OVH_APP_SECRET, ck)
-	resp, _ := govh.GetIp()
-	var ips []string
-	_ = json.Unmarshal([]byte(resp), &ips)
-	for _, ip := range ips {
-		fmt.Println(ip)
+	var resp string
+	var err error
+
+	switch cmd.Domain {
+	case "ip":
+		resp, err = ipHandler(&cmd)
+		break
+	case "help":
+		resp = "See : https://github.com/Toorop/govh"
+		break
+	default:
+		dieError("This section '", cmd.Domain, "' is not valid or not implemented yet !")
 	}
-	//fmt.Println(resp)
-
-	/*ovh := govh.NewClient(OVH_APP_KEY, OVH_APP_SECRET, ck)
-	resp, _ := ovh.Do("GET", "ip", "")
-
-	fmt.Println(resp)*/
-
-	/*terminal.Stdout.Color("y").
-	Print("Hello world").Nl().
-	Reset().
-	Colorf("@{kW}Hello world\n")
-	*/
-	//color.Println("@rHello worldiz")
-
-	/*
-		switch cmd.Domain {
-		//case "sms":
-		//	govh.SmsHandler(cmd)
-		//	break
-		case "help":
-			fmt.Println("HELP")
-			break
-		default:
-			fmt.Println("This domain is not valid or not implemented yet !\r\n\tgovh help\r\nfor... help.")
-		}*/
+	if err != nil {
+		dieError(err, resp)
+	}
+	dieOk(resp)
 
 }

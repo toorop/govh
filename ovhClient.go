@@ -5,7 +5,8 @@ import (
 	"fmt"
 	//"io"
 	"io/ioutil"
-	"log"
+	//"log"
+	"errors"
 	"net/http"
 	"strings"
 	"time"
@@ -45,20 +46,18 @@ func (c *ovhClient) Do(method string, ressource string, payload string) (respons
 
 	resp, err := c.client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		return
 	} else {
 		defer resp.Body.Close()
 		contents, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			log.Fatal(err)
+			return response, err
 		}
-		/*fmt.Println("The calculated length is:", len(string(contents)))
-		fmt.Println("   ", resp.StatusCode)
-		hdr := resp.Header
-		for key, value := range hdr {
-			fmt.Println("   ", key, ":", value)
-		}*/
+		if resp.StatusCode != 200 {
+			err = errors.New(resp.Status)
+		}
 		response = string(contents)
+		return response, err
 	}
 	return
 

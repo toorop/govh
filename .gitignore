@@ -22,3 +22,7 @@ _testmain.go
 *.exe
 
 /cli/exportAuth.sh
+
+/cli/ovh
+
+/cli/govhBack.gol
