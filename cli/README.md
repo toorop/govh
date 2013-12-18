@@ -4,9 +4,9 @@
 
 ### 1 - Download executable
 
-* [Windows](ftp://ftp.toorop.fr/softs/ovh_cli/windows/ovh.exe)
-* [Mac](ftp://ftp.toorop.fr/softs/ovh_cli/macos/ovh)
-* [Linux](ftp://ftp.toorop.fr/softs/ovh_cli/linux/ovh)
+* Windows : ftp://ftp.toorop.fr/softs/ovh_cli/windows/ovh.exe
+* MacOs : ftp://ftp.toorop.fr/softs/ovh_cli/macos/ovh
+* Linux : ftp://ftp.toorop.fr/softs/ovh_cli/linux/ovh
 
 
 ### 2 - Run cmd and follow instructions 
