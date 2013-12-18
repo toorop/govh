@@ -4,11 +4,9 @@
 
 ### 1 - Download executable
 
-* [Windows](https://github.com/Toorop/govh/blob/master/cli/bin/windows/ovh.exe)
-* [Mac](https://github.com/Toorop/govh/blob/master/cli/bin/macos/ovh)
-* [Linux](https://github.com/Toorop/govh/blob/master/cli/bin/linux/ovh)
-
-Click on the "Raw" button and after downloading rename the binary if needed. I will put all those binaries elsewhere soon. 
+* [Windows](ftp://ftp.toorop.fr/softs/ovh_cli/windows/ovh.exe)
+* [Mac](ftp://ftp.toorop.fr/softs/ovh_cli/macos/ovh)
+* [Linux](ftp://ftp.toorop.fr/softs/ovh_cli/linux/ovh)
 
 
 ### 2 - Open a terminal and launch it
