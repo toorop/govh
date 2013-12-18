@@ -10,7 +10,7 @@ import (
 	"bufio"
 	//"encoding/json"
 	"os"
-	//"runtime"
+	"runtime"
 )
 
 const (
@@ -44,8 +44,12 @@ func init() {
 	if len(ck) == 0 {
 		var r []byte
 
-		terminal.Stdout.Clear().Move(0, 0).Color("r").
-			Print("No consumer key found in environnement vars !").Nl().Nl().Reset()
+		if runtime.GOOS == "windows" {
+			fmt.Println(NL, "No consumer key found in environnement vars !", NL)
+		} else {
+			terminal.Stdout.Clear().Move(0, 0).Color("r").
+				Print("No consumer key found in environnement vars !").Nl().Nl().Reset()
+		}
 		for {
 			fmt.Print("Have you a valid Consumer Key for that app ? (y/n) : ")
 
@@ -56,9 +60,13 @@ func init() {
 		}
 		// Yes
 		if r[0] == 121 {
-			fmt.Println("Run the following command :")
-			fmt.Println("On WINDOWS : SET OVH_CONSUMER_KEY=your_consumer_key")
-			fmt.Println("On Linux/MacOs/*BSD : export OVH_CONSUMER_KEY=your_consumer_key")
+			fmt.Println("\r\nRun the following command :", NL)
+			if runtime.GOOS == "windows" {
+				fmt.Println("SET OVH_CONSUMER_KEY=your_consumer_key", NL)
+			} else {
+				fmt.Println("export OVH_CONSUMER_KEY=your_consumer_key", NL)
+			}
+			fmt.Println("and restart ovh CLI application.\r\n")
 			os.Exit(0)
 		}
 
@@ -67,14 +75,28 @@ func init() {
 			panic(err)
 		}
 		fmt.Print("\r\nYour consumer key is : ")
-		terminal.Stdout.Color("g").Print(ck).Nl().Reset().Nl()
+		if runtime.GOOS != "windows" {
+			terminal.Stdout.Color("g").Print(ck).Nl().Reset().Nl()
+		} else {
+			fmt.Print(ck)
+		}
+
 		fmt.Println("Now you need to validate it :")
-		fmt.Printf("\t- If you have a browser available on this machine it will open to the validation page.\n\t- If not copy and paste the link below in a browser to validate your key :\r\n\r\n%s\r\n", link)
-		webbrowser.Open(link)
+		if runtime.GOOS != "windows" {
+			fmt.Printf("\t- If you have a browser available on this machine it will open to the validation page.\n\t- If not copy and paste the link below in a browser to validate your key :\r\n\r\n%s\r\n", link)
+			webbrowser.Open(link)
+		} else {
+			fmt.Printf("To do it just copy and paste the link below in a browser and follow instructions on OVH website :\r\n\r\n%s\r\n", link)
+		}
+
 		fmt.Println("\r\nWhen it will be done run the following command : \r\n")
-		fmt.Printf("On WINDOWS : SET OVH_CONSUMER_KEY=%s\r\n", ck)
-		fmt.Printf("On Linux/MacOs/*BSD : export OVH_CONSUMER_KEY=%s\r\n", ck)
-		fmt.Println("and run ovh cli app.\r\n")
+		if runtime.GOOS == "windows" {
+			fmt.Printf("SET OVH_CONSUMER_KEY=%s\r\n", ck)
+		} else {
+			fmt.Printf("export OVH_CONSUMER_KEY=%s\r\n", ck)
+		}
+
+		fmt.Println("and restart ovh CLI application.\r\n")
 		os.Exit(0)
 	}
 }

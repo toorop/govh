@@ -13,7 +13,17 @@ func ipHandler(cmd *Cmd) (resp string, err error) {
 	switch cmd.Action {
 	// List
 	case "list":
-		resp, err = ip.List()
+		ipType := "all"
+		if len(cmd.Args) > 2 {
+			ipType = cmd.Args[2]
+		}
+		resp, err = ip.List(ipType)
+		break
+	case "lb":
+		if len(cmd.Args) < 3 {
+			dieError("\"ip lb\" needs an argument see doc at https://github.com/Toorop/govh/blob/master/cli/README.md")
+		}
+		resp, err = ip.LbList()
 		break
 	default:
 		err = errors.New(fmt.Sprintf("This action : '%s' is not valid or not implemented yet !", strings.Join(cmd.Args, " ")))

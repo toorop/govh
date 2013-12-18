@@ -15,8 +15,3 @@ func New(ak string, as string, ck string) (c *govh) {
 /*type ipList struct {
 	ips string
 }*/
-
-func (g *govh) GetIp() (response string, err error) {
-	response, err = g.client.Do("GET", "ip", "")
-	return
-}
