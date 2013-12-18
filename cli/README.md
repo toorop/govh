@@ -12,12 +12,12 @@
 ### 3 - Follow instruction to get & use  auth token
 More detailed procedure will come... 
 
-## Response
+### Response
 For now all responses (except error) are raw JSON response as returned by the API.
 Other formats will (probably) coming.
 
 
-## Avalaible commands
+### Avalaible commands
 We will consider Linux|MacOs version, just replace *./ovh* by *./ovh.exe* if you are using Windows (~~or replace your OS~~) 
   
 ### IP
