@@ -3,9 +3,13 @@
 ## How to use
 
 ### 1 - Download executable
+
 * [Windows](https://github.com/Toorop/govh/blob/master/cli/bin/windows/ovh.exe)
 * [Mac](https://github.com/Toorop/govh/blob/master/cli/bin/macos/ovh)
 * [Linux](https://github.com/Toorop/govh/blob/master/cli/bin/linux/ovh)
+
+Click on the "Raw" button and after downloading rename the binary if needed. I will put all those binaries elsewhere soon. 
+
 
 ### 2 - Open a terminal and launch it
 
