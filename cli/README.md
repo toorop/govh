@@ -9,10 +9,18 @@
 * [Linux](ftp://ftp.toorop.fr/softs/ovh_cli/linux/ovh)
 
 
-### 2 - Open a terminal and launch it
+### 2 - Run cmd and follow instructions 
+Open a terminal, go to the path where ovh binary is and run : 
 
-### 3 - Follow instruction to get & use  auth token
-More detailed procedure will come... 
+	./ovh
+	
+On Linux and MacOs
+
+	./ovh.exe
+
+On windows
+
+And follow the instruction to get and use your consumer key.
 
 ### Response
 For now all responses (except error) are raw JSON response as returned by the API.
