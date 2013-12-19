@@ -5,11 +5,11 @@ import (
 )
 
 type govh struct {
-	client *ovhClient
+	client *OvhClient
 }
 
 func New(ak string, as string, ck string) (c *govh) {
-	return &govh{&ovhClient{ak, as, ck, &http.Client{}}}
+	return &govh{&OvhClient{ak, as, ck, &http.Client{}}}
 }
 
 /*type ipList struct {

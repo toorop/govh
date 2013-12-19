@@ -16,19 +16,19 @@ const (
 	API_BASE = "https://api.ovh.com/1.0"
 )
 
-type ovhClient struct {
+type OvhClient struct {
 	ak     string
 	as     string
 	ck     string
 	client *http.Client
 }
 
-func NewClient(ak string, as string, ck string) (c *ovhClient) {
-	return &ovhClient{ak, as, ck, &http.Client{}}
+func NewClient(ak string, as string, ck string) (c *OvhClient) {
+	return &OvhClient{ak, as, ck, &http.Client{}}
 
 }
 
-func (c *ovhClient) Do(method string, ressource string, payload string) (response string, err error) {
+func (c *OvhClient) Do(method string, ressource string, payload string) (response string, err error) {
 	query := fmt.Sprintf("%s/%s", API_BASE, ressource)
 	req, err := http.NewRequest(method, query, strings.NewReader(payload))
 	if err != nil {
