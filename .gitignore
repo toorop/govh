@@ -26,4 +26,7 @@ _testmain.go
 
 /cli/govhBack.gol
 
-/bin
+example/cli/bin
+/example/cli/exportAuth.sh
+
+/example/cli/build
