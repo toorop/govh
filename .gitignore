@@ -40,3 +40,4 @@ _testmain.go
 /examples/cli/bin/macos/ovh
 
 /examples/cli/bin/linux/ovh
+/examples/cli/exportAuth.sh
