@@ -30,3 +30,13 @@ _testmain.go
 /example/cli/exportAuth.sh
 
 /example/cli/build
+
+/examples/cli/ovh.go
+
+/examples/cli/ovh
+
+/examples/cli/bin/windows/ovh.exe
+
+/examples/cli/bin/macos/ovh
+
+/examples/cli/bin/linux/ovh

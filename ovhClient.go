@@ -8,12 +8,15 @@ import (
 	//"log"
 	"errors"
 	"net/http"
+	//"net/url"
+	//"os"
 	"strings"
 	"time"
 )
 
 const (
-	API_BASE = "https://api.ovh.com/1.0"
+	API_BASE    = "https://api.ovh.com"
+	API_VERSION = "1.0"
 )
 
 type OvhClient struct {
@@ -28,20 +31,26 @@ func NewClient(ak string, as string, ck string) (c *OvhClient) {
 
 }
 
-func (c *OvhClient) Do(method string, ressource string, payload string) (response string, err error) {
-	query := fmt.Sprintf("%s/%s", API_BASE, ressource)
+func (c *OvhClient) Do(method string, ressource string, payload string) (response []byte, err error) {
+	query := fmt.Sprintf("%s/%s/%s", API_BASE, API_VERSION, ressource)
 	req, err := http.NewRequest(method, query, strings.NewReader(payload))
 	if err != nil {
 		return
 	}
 
+	if method == "POST" || method == "PUT" {
+		req.Header.Add("Content-Type", "application/json;charset=utf-8")
+	}
+	req.Header.Add("Accept", "application/json")
+
 	timestamp := fmt.Sprintf("%d", int32(time.Now().Unix()))
 	req.Header.Add("X-Ovh-Timestamp", timestamp)
 	req.Header.Add("X-Ovh-Application", c.ak)
 	req.Header.Add("X-Ovh-Consumer", c.ck)
-	// Signature
+	req.URL.Opaque = fmt.Sprintf("/%s/%s", API_VERSION, ressource)
+	//s := fmt.Sprintf("%s+%s+%s+%s+%s+%s", c.as, c.ck, method, query, payload, timestamp)
 	h := sha1.New()
-	h.Write([]byte(fmt.Sprintf("%s+%s+%s+%s+%s+%s", c.as, c.ck, "GET", query, payload, timestamp)))
+	h.Write([]byte(fmt.Sprintf("%s+%s+%s+%s+%s+%s", c.as, c.ck, method, query, payload, timestamp)))
 	req.Header.Add("X-Ovh-Signature", fmt.Sprintf("$1$%x", h.Sum(nil)))
 
 	resp, err := c.client.Do(req)
@@ -49,16 +58,14 @@ func (c *OvhClient) Do(method string, ressource string, payload string) (respons
 		return
 	} else {
 		defer resp.Body.Close()
-		contents, err := ioutil.ReadAll(resp.Body)
+		response, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return response, err
 		}
 		if resp.StatusCode != 200 {
 			err = errors.New(resp.Status)
 		}
-		response = string(contents)
 		return response, err
 	}
 	return
-
 }

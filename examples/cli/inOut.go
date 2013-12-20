@@ -4,10 +4,15 @@ import (
 	"fmt"
 	"github.com/wsxiaoys/terminal"
 	"os"
+	"runtime"
 )
 
 func dieError(v ...interface{}) {
-	terminal.Stdout.Color("r").Print("Error : ", v).Nl().Reset()
+	if runtime.GOOS == "windows" {
+		fmt.Println("Error : ", v, NL)
+	} else {
+		terminal.Stdout.Color("r").Print("Error : ", v).Nl().Reset()
+	}
 	os.Exit(1)
 }
 
