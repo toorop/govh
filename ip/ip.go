@@ -91,7 +91,7 @@ func (r *IpRessource) FwSetFirewallEnable(block IpBlock, ipv4 string, enabled bo
 	if err != nil {
 		return err
 	}
-	s, err := r.client.Do("PUT", uri, string(payload))
+	_, err = r.client.Do("PUT", uri, string(payload))
 	return err
 }
 
