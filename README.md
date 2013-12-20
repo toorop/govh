@@ -100,12 +100,84 @@ Example :
 	ovh ip fw 176.31.189.121/32 176.31.189.121 remove
 	176.31.189.121 removed from firewall
 		
+#### Get Properties of a firewalled IP
+	
+	ip fw IPBLOCK IPV4 prop
+
+Where :
+
+* IPBLOCK : an ip block given by "ovh ip list"
+* IPV4 : an IP v4 from IPBLOCK		
+
+Response : Properties on success, one per line. Error otherwise.
+
+Example 
+	./ovh ip fw 176.31.189.121/32 176.31.189.121 prop
+	ipOnFirewall: 176.31.189.121
+	Enabled: false
+	State: ok				
+
+#### Enable firewall
+
+	ip fw IPBLOCK IPV4 enable
+
+Where :
+
+* IPBLOCK : an ip block given by "ovh ip list"
+* IPV4 : an IP v4 from IPBLOCK		
+
+Response : "ok" if the command succeed. An error if not.
+
+Example :
+	
+	./ovh ip fw 176.31.189.121/32 176.31.189.121 enable
+	ok
+
+
+#### Disable firewall
+
+	ip fw IPBLOCK IPV4 disable
+
+Where :
+
+* IPBLOCK : an ip block given by "ovh ip list"
+* IPV4 : an IP v4 from IPBLOCK		
+
+Response : "ok" if the command succeed. An error if not.
+
+Example :
+	
+	./ovh ip fw 176.31.189.121/32 176.31.189.121 disable
+	ok
+	
+#### Get a firewall rule
+	
+	ip fw IPBLOCK IPV4 getRule SEQUENCE
+	
+Where :
+
+* IPBLOCK : an ip block given by "ovh ip list"
+* IPV4 : an IP v4 from IPBLOCK	
+* SEQUENCE : Seqeunce number of the rule
+
+Response : Formatted rule (see example) or error.
+
+Example :
+
+	./ovh ip fw 176.31.189.121/32 176.31.189.121 getRule 1
+	Protocol: tcp
+	Source: 8.8.8.8/32
+	DestinationPort: eq 25
+	Sequence: 1
+	Options: urg psh ack syn fin rst
+	Destination: 176.31.189.121/32
+	Rule: permit tcp 8.8.8.8/32 range 10 20 176.31.189.121/32 eq 25 urg psh ack syn fin rst
+	SourcePort: range 10 20
+	State: ok
+	CreationDate: 2013-12-20T17:45:07+01:00
+	Action: permit
+	
 		
-	
-	
-
-
-
 
 
 	
