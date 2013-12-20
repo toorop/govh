@@ -80,3 +80,59 @@ func (r *IpRessource) FwRemoveIp(block IpBlock, ipv4 string) error {
 	_, err := r.client.Do("DELETE", uri, "")
 	return err
 }
+
+// Enable / disable firewall for IP ipv4 of IpBlock block
+func (r *IpRessource) FwSetFirewallEnable(block IpBlock, ipv4 string, enabled bool) error {
+	uri := fmt.Sprintf("ip/%s/firewall/%s", url.QueryEscape(block.IP), ipv4)
+	type p struct {
+		Enabled bool `json:"enabled"`
+	}
+	payload, err := json.Marshal(p{enabled})
+	if err != nil {
+		return err
+	}
+	s, err := r.client.Do("PUT", uri, string(payload))
+	fmt.Println(string(s))
+	return err
+}
+
+// Get properties about an IP firewalled
+func (r *IpRessource) FwGetIpProperties(block IpBlock, ipv4 string) (i IpFirewallIp, e error) {
+	uri := fmt.Sprintf("ip/%s/firewall/%s", url.QueryEscape(block.IP), ipv4)
+	t, err := r.client.Do("GET", uri, "")
+	if err != nil {
+		return i, err
+	}
+	err = json.Unmarshal(t, &i)
+	return
+}
+
+// List firewall rules
+
+//func (r *IpRessource) FwGetIpRules
+
+// Get rule
+func (r *IpRessource) FwGetRule(block IpBlock, ipv4 string, sequence string) (rule FirewallRule, err error) {
+	uri := fmt.Sprintf("ip/%s/firewall/%s/rules/%s", url.QueryEscape(block.IP), ipv4, sequence)
+	t, err := r.client.Do("GET", uri, "")
+	if err != nil {
+		return rule, err
+	}
+	err = json.Unmarshal(t, &rule)
+	return
+}
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
