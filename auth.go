@@ -21,7 +21,7 @@ func AuthGetConsumerKey(ak string) (ck string, link string, err error) {
 	client := &http.Client{}
 
 	body := "{\"accessRules\":[{\"method\":\"GET\",\"path\":\"/*\"},{\"method\":\"POST\",\"path\":\"/*\"},{\"method\":\"DELETE\",\"path\":\"/*\"},{\"method\":\"PUT\",\"path\":\"/*\"},{\"method\":\"DELETE\",\"path\":\"/*\"} ]}"
-	url := fmt.Sprintf("%s/auth/credential", API_BASE)
+	url := fmt.Sprintf("%s/%s/auth/credential", API_BASE, API_VERSION)
 
 	req, err := http.NewRequest("POST", url, strings.NewReader(body))
 	req.Header.Add("User-Agent", "Govh (https://github.com/Toorop/govh)")
