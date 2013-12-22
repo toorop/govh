@@ -1,0 +1,43 @@
+# Compiled Object files, Static and Dynamic libs (Shared Objects)
+*.o
+*.a
+*.so
+
+# Folders
+_obj
+_test
+
+# Architecture specific extensions/prefixes
+*.[568vq]
+[568vq].out
+
+*.cgo1.go
+*.cgo2.c
+_cgo_defun.c
+_cgo_gotypes.go
+_cgo_export.*
+
+_testmain.go
+
+
+/cli/exportAuth.sh
+
+/cli/ovh
+
+/cli/govhBack.gol
+
+/example/cli/bin
+/example/cli/exportAuth.sh
+
+/example/cli/build
+
+/examples/cli/ovh.go
+
+/examples/cli/ovh
+
+/examples/cli/bin/windows/ovh.exe
+
+/examples/cli/bin/macos/ovh
+
+/examples/cli/bin/linux/ovh
+/examples/cli/exportAuth.sh
