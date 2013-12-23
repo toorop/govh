@@ -25,6 +25,14 @@ type IpFirewallIp struct {
 
 // destinationPort
 type DestinationPort struct {
+	From int `json:"from"`
+	To   int `json:"to"`
+}
+
+// sourcePort
+type SourcePort struct {
+	From int `json:"from"`
+	To   int `json:"to"`
 }
 
 // tcpOption
@@ -39,10 +47,23 @@ type TcpOption struct {
 }
 
 // udpOption
-type udpOption struct {
+type UdpOption struct {
 	Fragments bool `json:"fragment"`
 }
 
+// Post
+type FirewallRule2Add struct {
+	Action          string          `json:"action"`
+	DestinationPort DestinationPort `json:"destinationPort,omitempty"`
+	Protocol        string          `json:"protocol"`
+	Sequence        string          `json:"sequence"`
+	Source          string          `json:"source,omitempty"`
+	SourcePort      SourcePort      `json:"sourcePort,omitempty"`
+	TcpOption       TcpOption       `json:"tcpOption,omitempty"`
+	UdpOption       UdpOption       `json:"udpOption,omitempty"`
+}
+
+// Reply
 type FirewallRule struct {
 	Protocol        string   `json:"protocol"`
 	Source          string   `json:"source"`
