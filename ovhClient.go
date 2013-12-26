@@ -15,6 +15,7 @@ import (
 )
 
 const (
+	API_HOST    = "api.ovh.com"
 	API_BASE    = "https://api.ovh.com"
 	API_VERSION = "1.0"
 )
@@ -47,8 +48,9 @@ func (c *OvhClient) Do(method string, ressource string, payload string) (respons
 	req.Header.Add("X-Ovh-Timestamp", timestamp)
 	req.Header.Add("X-Ovh-Application", c.ak)
 	req.Header.Add("X-Ovh-Consumer", c.ck)
-	req.URL.Opaque = fmt.Sprintf("/%s/%s", API_VERSION, ressource)
-	//s := fmt.Sprintf("%s+%s+%s+%s+%s+%s", c.as, c.ck, method, query, payload, timestamp)
+	p := strings.Split(ressource, "?")
+	req.URL.Opaque = fmt.Sprintf("/%s/%s", API_VERSION, p[0])
+
 	h := sha1.New()
 	h.Write([]byte(fmt.Sprintf("%s+%s+%s+%s+%s+%s", c.as, c.ck, method, query, payload, timestamp)))
 	req.Header.Add("X-Ovh-Signature", fmt.Sprintf("$1$%x", h.Sum(nil)))
