@@ -255,6 +255,8 @@ func (r *IpRessource) GetBlockedForSpam() (ips []string, err error) {
 			// Not all IP are concerned by spamming status, if not found continue
 			if strings.HasPrefix(err.Error(), "404 This service does not exist") {
 				continue
+			} else if strings.HasPrefix(err.Error(), "460 This Service is expired") {
+				continue
 			}
 			return ips, err
 		}
