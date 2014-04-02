@@ -49,5 +49,4 @@ func AuthGetConsumerKey(ak string) (ck string, link string, err error) {
 	ck = jresp.ConsumerKey
 	link = jresp.ValidationUrl
 	return
-
 }

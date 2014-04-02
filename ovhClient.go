@@ -50,6 +50,9 @@ func (c *OvhClient) Do(method string, ressource string, payload string) (respons
 	req.Header.Add("X-Ovh-Consumer", c.ck)
 	p := strings.Split(ressource, "?")
 	req.URL.Opaque = fmt.Sprintf("/%s/%s", API_VERSION, p[0])
+	//t := fmt.Sprintf("%s+%s+%s+%s+%s+%s", c.as, c.ck, method, query, payload, timestamp)
+	//fmt.Println(t)
+	//os.Exit(0)
 
 	h := sha1.New()
 	h.Write([]byte(fmt.Sprintf("%s+%s+%s+%s+%s+%s", c.as, c.ck, method, query, payload, timestamp)))
