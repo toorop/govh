@@ -1,17 +1,12 @@
 package govh
 
 import (
-	"net/http"
+//"net/http"
 )
 
-type govh struct {
-	client *OvhClient
-}
-
-func New(ak string, as string, ck string) (c *govh) {
-	return &govh{&OvhClient{ak, as, ck, &http.Client{}}}
-}
-
-/*type ipList struct {
-	ips string
-}*/
+const (
+	//API_HOST        = "api.ovh.com"
+	API_ENDPOINT_EU = "https://api.ovh.com"
+	API_ENDPOINT_CA = "https:///ca.api.ovh.com"
+	API_VERSION     = "1.0"
+)

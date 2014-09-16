@@ -2,8 +2,7 @@ package sms
 
 // Job
 type Job struct {
-	Receiver string `json:"receiver"`
-
+	Receiver         string `json:"receiver"`
 	DeliveryReceipt  int    `json:"deliveryReceipt,omitempty"`
 	MessageLength    int    `json:"messageLength,omitempty"`
 	DifferedDelivery int    `json:"differedDelivery,omitempty"`
@@ -17,8 +16,8 @@ type Job struct {
 }
 
 // NewJob
-// Used when addinf a new job
-type NewJob struct {
+// Used when adding a new job
+type SendJob struct {
 	NoStopClause         bool     `json:"noStopClause,omitempty"`         // Do not display STOP clause in the message, this requires that this is not an advertising message
 	Priority             string   `json:"priority,omitempty"`             // The priority of the message
 	ValidityPeriod       int      `json:"validityPeriod,omitempty"`       // The maximum time -in minute(s)- before the message is dropped. default 2880
@@ -39,6 +38,8 @@ type NewJob struct {
 
 // Sending Report
 type SendingReport struct {
-	TotalCreditsRemoved int   `json:"totalCreditsRemoved,omitempty"` // Credit removed
-	Ids                 []int `json:"ids,omitempty"`                 // Id of SMS/jobs
+	TotalCreditsRemoved int      `json:"totalCreditsRemoved,omitempty"` // Credit removed
+	InvalidReceivers    []string `json:"invalidReceivers,omitempty"`    // List of invalids receivers
+	Ids                 []int    `json:"ids,omitempty"`                 // Id of SMS/jobs
+	ValidReceivers      []string `json:"validReceivers,omitempty"`      // List of valids receivers
 }

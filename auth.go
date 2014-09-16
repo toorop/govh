@@ -9,7 +9,12 @@ import (
 	"strings"
 )
 
-func AuthGetConsumerKey(ak string) (ck string, link string, err error) {
+func AuthGetConsumerKey(ak, region string) (ck string, link string, err error) {
+	endpoint := API_ENDPOINT_EU
+	if strings.ToLower(region) == "ca" {
+		endpoint = API_ENDPOINT_CA
+	}
+
 	type response struct {
 		ValidationUrl string
 		ConsumerKey   string
@@ -21,7 +26,7 @@ func AuthGetConsumerKey(ak string) (ck string, link string, err error) {
 	client := &http.Client{}
 
 	body := "{\"accessRules\":[{\"method\":\"GET\",\"path\":\"/*\"},{\"method\":\"POST\",\"path\":\"/*\"},{\"method\":\"DELETE\",\"path\":\"/*\"},{\"method\":\"PUT\",\"path\":\"/*\"},{\"method\":\"DELETE\",\"path\":\"/*\"} ]}"
-	url := fmt.Sprintf("%s/%s/auth/credential", API_BASE, API_VERSION)
+	url := fmt.Sprintf("%s/%s/auth/credential", endpoint, API_VERSION)
 
 	req, err := http.NewRequest("POST", url, strings.NewReader(body))
 	req.Header.Add("User-Agent", "Govh (https://github.com/Toorop/govh)")

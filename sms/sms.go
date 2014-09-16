@@ -3,9 +3,9 @@ package sms
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
+	//"fmt"
 	"github.com/Toorop/govh"
-	//"net/url"
+	"net/url"
 	//"os"
 )
 
@@ -13,6 +13,7 @@ type SmsRessource struct {
 	client *govh.OvhClient
 }
 
+// New return a new SmsRessource
 func New(client *govh.OvhClient) (*SmsRessource, error) {
 	if client == nil {
 		return nil, errors.New("client is nil")
@@ -20,21 +21,18 @@ func New(client *govh.OvhClient) (*SmsRessource, error) {
 	return &SmsRessource{client: client}, nil
 }
 
-// List SMS services availables
+// ListServices returns availables SMS services
 func (r *SmsRessource) ListServices() (services []string, err error) {
-	t, err := r.client.Do("GET", "sms", "")
-	if err != nil {
+	resp, err := r.client.Do("GET", "sms", "")
+	if err = resp.HandleErr(err, []int{200}); err != nil {
 		return
 	}
-	if err = json.Unmarshal(t, &services); err != nil {
-		return nil, err
-	}
+	err = json.Unmarshal(resp.Body, &services)
 	return
 }
 
-// Add a new SMS job
-// ie send a SMS
-func (r *SmsRessource) AddJob(serviceName string, job *NewJob) (report SendingReport, err error) {
+// AddJob send a new SMS
+func (r *SmsRessource) AddJob(serviceName string, job *SendJob) (report SendingReport, err error) {
 	// Default value
 	if job.ValidityPeriod == 0 {
 		job.ValidityPeriod = 2880
@@ -42,19 +40,16 @@ func (r *SmsRessource) AddJob(serviceName string, job *NewJob) (report SendingRe
 	if job.Class == "" {
 		job.Class = "sim"
 	}
-	uri := fmt.Sprintf("sms/%s/jobs", serviceName)
+
 	payload, err := json.Marshal(job)
 	if err != nil {
 		return
 	}
 
-	t, err := r.client.Do("POST", uri, string(payload))
-	if err != nil {
-		err = errors.New(fmt.Sprintf("%s - %s", err, t))
+	resp, err := r.client.Do("POST", "sms/"+url.QueryEscape(serviceName)+"/jobs", string(payload))
+	if err = resp.HandleErr(err, []int{200}); err != nil {
+		return
 	}
-	err = json.Unmarshal(t, &report)
-	if err != nil {
-		err = errors.New(fmt.Sprintf("%s - %s", err, t))
-	}
+	err = json.Unmarshal(resp.Body, &report)
 	return
 }
