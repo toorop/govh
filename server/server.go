@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	//"fmt"
-	"github.com/Toorop/govh"
+	"github.com/toorop/govh"
 	"net/url"
 	"strconv"
 )

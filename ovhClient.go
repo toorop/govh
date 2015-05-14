@@ -30,6 +30,7 @@ type ovhResponseErr struct {
 	Message   string `json:"message"`
 }
 
+// NewClient returns an OVH API Client
 func NewClient(ak string, as string, ck string, region string) (c *OvhClient) {
 	endpoint := API_ENDPOINT_EU
 	if strings.ToLower(region) == "ca" {
@@ -39,14 +40,14 @@ func NewClient(ak string, as string, ck string, region string) (c *OvhClient) {
 
 }
 
-// Response represents an response from OVH API
+// Response represents a response from OVH API
 type response struct {
 	StatusCode int
 	Status     string
 	Body       []byte
 }
 
-// handleCommon return error on unexpected HTTP code
+// handleErr return error on unexpected HTTP code
 func (r *response) HandleErr(err error, expectedHttpCode []int) error {
 	if err != nil {
 		return err
@@ -56,7 +57,7 @@ func (r *response) HandleErr(err error, expectedHttpCode []int) error {
 			return nil
 		}
 	}
-	// Try to get OVH response
+	// Try to get OVH returning info about the error
 	if r.Body != nil {
 		var ovhResponse ovhResponseErr
 		err := json.Unmarshal(r.Body, &ovhResponse)
@@ -94,7 +95,8 @@ func (c *OvhClient) Do(method string, ressource string, payload string) (respons
 	h.Write([]byte(fmt.Sprintf("%s+%s+%s+%s+%s+%s", c.as, c.ck, method, query, payload, timestamp)))
 	req.Header.Add("X-Ovh-Signature", fmt.Sprintf("$1$%x", h.Sum(nil)))
 
-	r, err := c.client.Do(req)
+	//r, err := c.client.Do(req)
+	r, err := c.doTimeoutRequest(time.NewTimer(30*time.Second), req)
 	if err != nil {
 		return
 	}
@@ -104,4 +106,25 @@ func (c *OvhClient) Do(method string, ressource string, payload string) (respons
 	response.Status = r.Status
 	response.Body, err = ioutil.ReadAll(r.Body)
 	return
+}
+
+// doTimeoutRequest do a HTTP request with timeout
+func (c *OvhClient) doTimeoutRequest(timer *time.Timer, req *http.Request) (*http.Response, error) {
+	// Do the request in the background so we can check the timeout
+	type result struct {
+		resp *http.Response
+		err  error
+	}
+	done := make(chan result, 1)
+	go func() {
+		resp, err := c.client.Do(req)
+		done <- result{resp, err}
+	}()
+	// Wait for the read or the timeout
+	select {
+	case r := <-done:
+		return r.resp, r.err
+	case <-timer.C:
+		return nil, errors.New("timeout on reading data from OVH API")
+	}
 }

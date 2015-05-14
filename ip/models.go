@@ -1,7 +1,7 @@
 package ip
 
 import (
-	"github.com/Toorop/govh"
+	"github.com/toorop/govh"
 )
 
 // Type OF IP

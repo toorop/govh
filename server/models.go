@@ -1,7 +1,7 @@
 package server
 
 import (
-	"github.com/Toorop/govh"
+	"github.com/toorop/govh"
 )
 
 // Server properties
