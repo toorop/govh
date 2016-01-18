@@ -2,57 +2,55 @@ package govh
 
 import (
 	"crypto/sha1"
-	"fmt"
-	//"io"
-	"io/ioutil"
-	//"log"
-	"errors"
-	"net/http"
-	//"net/url"
-	//"os"
 	"encoding/json"
+	"errors"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 	"strings"
 	"time"
 )
 
-type OvhClient struct {
-	ak           string
-	as           string
-	ck           string
-	api_endpoint string
-	client       *http.Client
+// OVHClient API client
+type OVHClient struct {
+	ak string
+	as string
+	ck string
+	//api_endpoint string
+	endpoint string
+	client   *http.Client
 }
 
-// ovhResponseErr represents an unmarshalled reponse from OVH in case od error
+// ovhResponseErr represents an unmarshalled reponse from OVH in case of error
 type ovhResponseErr struct {
-	ErrorCode string `json:"errorCode"`
-	HttpCode  string `json:"httpCode"`
-	Message   string `json:"message"`
+	ErrorCode      string `json:"errorCode"`
+	HTTPStatusCode string `json:"httpCode"`
+	Message        string `json:"message"`
 }
 
 // NewClient returns an OVH API Client
-func NewClient(ak string, as string, ck string, region string) (c *OvhClient) {
+func NewClient(ak string, as string, ck string, region string) (c *OVHClient) {
 	endpoint := API_ENDPOINT_EU
 	if strings.ToLower(region) == "ca" {
 		endpoint = API_ENDPOINT_CA
 	}
-	return &OvhClient{ak, as, ck, endpoint, &http.Client{}}
+	return &OVHClient{ak, as, ck, endpoint, &http.Client{}}
 
 }
 
 // Response represents a response from OVH API
-type response struct {
+type Response struct {
 	StatusCode int
 	Status     string
 	Body       []byte
 }
 
-// handleErr return error on unexpected HTTP code
-func (r *response) HandleErr(err error, expectedHttpCode []int) error {
+// HandleErr return error on unexpected HTTP code
+func (r *Response) HandleErr(err error, expectedHTTPCode []int) error {
 	if err != nil {
 		return err
 	}
-	for _, code := range expectedHttpCode {
+	for _, code := range expectedHTTPCode {
 		if r.StatusCode == code {
 			return nil
 		}
@@ -69,12 +67,12 @@ func (r *response) HandleErr(err error, expectedHttpCode []int) error {
 			}
 		}
 	}
-	return errors.New(fmt.Sprintf("%d - %s", r.StatusCode, r.Status))
+	return fmt.Errorf("%d - %s", r.StatusCode, r.Status)
 }
 
 // Do process the request & return a reponse (or error)
-func (c *OvhClient) Do(method string, ressource string, payload string) (response response, err error) {
-	query := fmt.Sprintf("%s/%s/%s", c.api_endpoint, API_VERSION, ressource)
+func (c *OVHClient) Do(method string, ressource string, payload string) (response Response, err error) {
+	query := fmt.Sprintf("%s/%s/%s", c.endpoint, API_VERSION, ressource)
 	req, err := http.NewRequest(method, query, strings.NewReader(payload))
 	if err != nil {
 		return
@@ -109,7 +107,7 @@ func (c *OvhClient) Do(method string, ressource string, payload string) (respons
 }
 
 // doTimeoutRequest do a HTTP request with timeout
-func (c *OvhClient) doTimeoutRequest(timer *time.Timer, req *http.Request) (*http.Response, error) {
+func (c *OVHClient) doTimeoutRequest(timer *time.Timer, req *http.Request) (*http.Response, error) {
 	// Do the request in the background so we can check the timeout
 	type result struct {
 		resp *http.Response
