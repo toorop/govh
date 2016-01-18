@@ -5,7 +5,7 @@ import (
 )
 
 // Type OF IP
-var IpType = []string{"cdn", "dedicated", "hosted_ssl", "loadBalancing", "mail", "pcc", "pci", "vpn", "vps", "xdsl"}
+var IPType = []string{"cdn", "dedicated", "hosted_ssl", "loadBalancing", "mail", "pcc", "pci", "vpn", "vps", "xdsl"}
 
 /*
 // DateTime represents date as returned by OVH
@@ -55,13 +55,13 @@ func (dt DateTime2) MarshalJSON() ([]byte, error) {
 */
 
 // IP
-type IpBlock struct {
+type IPBlock struct {
 	IP   string
 	Type string // IpType
 }
 
 // IpProperties represents properties of an IP
-type IpProperties struct {
+type IPProperties struct {
 	Ip          string `json:"ip,omitempty"`
 	Type        string `json:"type,omitempty"`
 	Description string `json:"description,omitempty"`
@@ -134,7 +134,7 @@ type FirewallRule struct {
 //
 
 // SpamIp
-type SpamIp struct {
+type SpamIP struct {
 	Time       uint32        `json:"time"`       // Time (in seconds) while the IP will be blocked
 	Date       govh.DateTime `json:"date"`       // Last date the ip was blocked
 	IpSpamming string        `json:"ipSpamming"` // IP address which is sending spam

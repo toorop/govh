@@ -4,33 +4,36 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/toorop/govh"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/toorop/govh"
 )
 
-type IpRessource struct {
-	client *govh.OvhClient
+// Client is a REST client for server API
+type Client struct {
+	*govh.OVHClient
 }
 
-func New(client *govh.OvhClient) (*IpRessource, error) {
+// New return a new server Client
+func New(client *govh.OVHClient) (*Client, error) {
 	if client == nil {
 		return nil, errors.New("client is nil")
 	}
-	return &IpRessource{client: client}, nil
+	return &Client{client}, nil
 }
 
 // List return a slice of IpBlock
-func (i *IpRessource) List(filterDesc, filterIp, filterRoutedTo, filterType string) (ips []IpBlock, err error) {
+func (c *Client) List(filterDesc, filterIP, filterRoutedTo, filterType string) (ips []IPBlock, err error) {
 	uri := "ip"
 	args := []string{}
 
 	if len(filterDesc) > 0 {
 		args = append(args, "description="+url.QueryEscape(filterDesc))
 	}
-	if len(filterIp) > 0 {
-		args = append(args, "ip="+url.QueryEscape(filterIp))
+	if len(filterIP) > 0 {
+		args = append(args, "ip="+url.QueryEscape(filterIP))
 	}
 	if len(filterRoutedTo) > 0 {
 		args = append(args, "routedTo.serviceName="+url.QueryEscape(filterRoutedTo))
@@ -42,22 +45,22 @@ func (i *IpRessource) List(filterDesc, filterIp, filterRoutedTo, filterType stri
 	if len(args) > 0 {
 		uri = uri + "?" + strings.Join(args, "&")
 	}
-	r, err := i.client.Do("GET", uri, "")
+	r, err := c.GET(uri)
 	if err = r.HandleErr(err, []int{200}); err != nil {
 		return
 	}
 	var ipl = []string{}
 	if err = json.Unmarshal(r.Body, &ipl); err == nil {
 		for _, i := range ipl {
-			ips = append(ips, IpBlock{i, filterType})
+			ips = append(ips, IPBlock{i, filterType})
 		}
 	}
 	return
 }
 
-// GetIpProperties return properties of an IP
-func (i *IpRessource) GetIpProperties(ip string) (properties IpProperties, err error) {
-	r, err := i.client.Do("GET", "ip/"+url.QueryEscape(ip), "")
+// GetIPProperties return properties of an IP
+func (c *Client) GetIPProperties(IP string) (properties IPProperties, err error) {
+	r, err := c.GET("ip/" + url.QueryEscape(IP))
 	if err = r.HandleErr(err, []int{200}); err != nil {
 		return
 	}
@@ -66,14 +69,14 @@ func (i *IpRessource) GetIpProperties(ip string) (properties IpProperties, err e
 }
 
 // UpdateProperties update IP properties
-func (i *IpRessource) UpdateProperties(ip, desc string) error {
+func (c *Client) UpdateProperties(IP, desc string) error {
 	payload, err := json.Marshal(IpUpdatableProperties{
 		Description: desc,
 	})
 	if err != nil {
 		return err
 	}
-	r, err := i.client.Do("PUT", "ip/"+url.QueryEscape(ip), string(payload))
+	r, err := c.PUT("ip/"+url.QueryEscape(IP), string(payload))
 	err = r.HandleErr(err, []int{200})
 	return err
 }
@@ -84,7 +87,7 @@ func (i *IpRessource) UpdateProperties(ip, desc string) error {
 //
 
 // List IP load balancing
-func (r *IpRessource) LbList() (resp []byte, err error) {
+func (r *Client) LbList() (resp []byte, err error) {
 	resp, err = r.client.Do("GET", "ip/loadBalancing", "")
 	return
 }*/
@@ -93,47 +96,47 @@ func (r *IpRessource) LbList() (resp []byte, err error) {
 //// FIREWALL
 //
 
-// List IP of block IP under firewall protection
-func (i *IpRessource) FwListIpOfBlock(block IpBlock) (ips []string, err error) {
-	r, err := i.client.Do("GET", "ip/"+url.QueryEscape(block.IP)+"/firewall", "")
+// FwListIPOfBlock List IP of block IP under firewall protection
+func (c *Client) FwListIPOfBlock(block IPBlock) (IPs []string, err error) {
+	r, err := c.GET("ip/" + url.QueryEscape(block.IP) + "/firewall")
 	if err = r.HandleErr(err, []int{200}); err != nil {
 		return
 	}
-	err = json.Unmarshal(r.Body, &ips)
+	err = json.Unmarshal(r.Body, &IPs)
 	return
 }
 
-// Add IP to firewall
-func (i *IpRessource) FwAddIp(block IpBlock, ipv4 string) error {
+// FwAddIP Add IP to firewall
+func (c *Client) FwAddIP(block IPBlock, IPv4 string) error {
 	type p struct {
-		IpOnFirewall string `json:"ipOnFirewall"`
+		IPOnFirewall string `json:"ipOnFirewall"`
 	}
-	payload, err := json.Marshal(p{ipv4})
+	payload, err := json.Marshal(p{IPv4})
 	if err != nil {
 		return err
 	}
-	r, err := i.client.Do("POST", "ip/"+url.QueryEscape(block.IP)+"/firewall", string(payload))
+	r, err := c.POST("ip/"+url.QueryEscape(block.IP)+"/firewall", string(payload))
 	return r.HandleErr(err, []int{200})
 }
 
-// Remove IP from firewall
-func (i *IpRessource) FwRemoveIp(block IpBlock, ipv4 string) error {
-	r, err := i.client.Do("DELETE", "ip/"+url.QueryEscape(block.IP)+"/firewall/"+url.QueryEscape(ipv4), "")
+// FwRemoveIP Remove IP from firewall
+func (c *Client) FwRemoveIP(block IPBlock, IPv4 string) error {
+	r, err := c.DELETE("ip/" + url.QueryEscape(block.IP) + "/firewall/" + url.QueryEscape(IPv4))
 	return r.HandleErr(err, []int{200})
 }
 
-// Get properties about an IP firewalled
-func (i *IpRessource) FwGetIpProperties(block IpBlock, ipv4 string) (ip FirewalledIp, err error) {
-	r, err := i.client.Do("GET", "ip/"+url.QueryEscape(block.IP)+"/firewall/"+url.QueryEscape(ipv4), "")
+// FwGetIPProperties Get properties about an IP firewalled
+func (c *Client) FwGetIPProperties(block IPBlock, IPv4 string) (IP FirewalledIp, err error) {
+	r, err := c.GET("ip/" + url.QueryEscape(block.IP) + "/firewall/" + url.QueryEscape(IPv4))
 	if err = r.HandleErr(err, []int{200}); err != nil {
 		return
 	}
-	err = json.Unmarshal(r.Body, &ip)
+	err = json.Unmarshal(r.Body, &IP)
 	return
 }
 
-// FwUpdateIp: update properties of an IP on firwall
-func (i *IpRessource) FwUpdateIp(block IpBlock, ipv4 string, enabled bool) error {
+// FwUpdateIP  update properties of an IP on firewall
+func (c *Client) FwUpdateIP(block IPBlock, IPv4 string, enabled bool) error {
 	var err error
 	var payload []byte
 	type p struct {
@@ -142,20 +145,20 @@ func (i *IpRessource) FwUpdateIp(block IpBlock, ipv4 string, enabled bool) error
 	if payload, err = json.Marshal(p{enabled}); err != nil {
 		return err
 	}
-	r, err := i.client.Do("PUT", "ip/"+url.QueryEscape(block.IP)+"/firewall/"+url.QueryEscape(ipv4), string(payload))
+	r, err := c.PUT("ip/"+url.QueryEscape(block.IP)+"/firewall/"+url.QueryEscape(IPv4), string(payload))
 	return r.HandleErr(err, []int{200})
 }
 
 // FwAddRule adds a firewall rule
-func (i *IpRessource) FwAddRule(block IpBlock, ipv4 string, rule FwRule2Add) error {
+func (c *Client) FwAddRule(block IPBlock, IPv4 string, rule FwRule2Add) error {
 	payload, err := json.Marshal(rule)
-	r, err := i.client.Do("POST", "ip/"+url.QueryEscape(block.IP)+"/firewall/"+url.QueryEscape(ipv4)+"/rule", string(payload))
+	r, err := c.POST("ip/"+url.QueryEscape(block.IP)+"/firewall/"+url.QueryEscape(IPv4)+"/rule", string(payload))
 	return r.HandleErr(err, []int{200})
 }
 
-// FwGetRulesSequences return rules sequences
-func (i *IpRessource) FwListRules(block IpBlock, ipv4 string, state ...string) (sequences []int, err error) {
-	uri := fmt.Sprintf("ip/%s/firewall/%s/rule", url.QueryEscape(block.IP), url.QueryEscape(ipv4))
+// FwListRules return rules sequences
+func (c *Client) FwListRules(block IPBlock, IPv4 string, state ...string) (sequences []int, err error) {
+	uri := fmt.Sprintf("ip/%s/firewall/%s/rule", url.QueryEscape(block.IP), url.QueryEscape(IPv4))
 	if len(state) > 0 {
 		if !(state[0] == "creationPending" || state[0] == "ok" || state[0] == "removalPending") {
 			err = errors.New("Bad parameter state (creationPending|ok|removalPending)")
@@ -163,7 +166,7 @@ func (i *IpRessource) FwListRules(block IpBlock, ipv4 string, state ...string) (
 		}
 		uri = uri + "?state=" + url.QueryEscape(state[0])
 	}
-	r, err := i.client.Do("GET", uri, "")
+	r, err := c.GET(uri)
 	if err = r.HandleErr(err, []int{200}); err != nil {
 		return
 	}
@@ -172,8 +175,8 @@ func (i *IpRessource) FwListRules(block IpBlock, ipv4 string, state ...string) (
 }
 
 // FwGetRuleProperties returns rule Properties
-func (i *IpRessource) FwGetRuleProperties(block IpBlock, ipv4 string, sequence int) (rule FirewallRule, err error) {
-	r, err := i.client.Do("GET", "ip/"+url.QueryEscape(block.IP)+"/firewall/"+url.QueryEscape(ipv4)+"/rule/"+url.QueryEscape(fmt.Sprintf("%d", sequence)), "")
+func (c *Client) FwGetRuleProperties(block IPBlock, IPv4 string, sequence int) (rule FirewallRule, err error) {
+	r, err := c.GET("ip/" + url.QueryEscape(block.IP) + "/firewall/" + url.QueryEscape(IPv4) + "/rule/" + url.QueryEscape(fmt.Sprintf("%d", sequence)))
 	if err = r.HandleErr(err, []int{200}); err != nil {
 		return
 	}
@@ -181,9 +184,9 @@ func (i *IpRessource) FwGetRuleProperties(block IpBlock, ipv4 string, sequence i
 	return
 }
 
-// Remove a rule
-func (i *IpRessource) FwRemoveRule(block IpBlock, ipv4 string, sequence int) error {
-	r, err := i.client.Do("DELETE", "ip/"+url.QueryEscape(block.IP)+"/firewall/"+url.QueryEscape(ipv4)+"/rule/"+url.QueryEscape(fmt.Sprintf("%d", sequence)), "")
+//FwRemoveRule removes a rule
+func (c *Client) FwRemoveRule(block IPBlock, IPv4 string, sequence int) error {
+	r, err := c.DELETE("ip/" + url.QueryEscape(block.IP) + "/firewall/" + url.QueryEscape(IPv4) + "/rule/" + url.QueryEscape(fmt.Sprintf("%d", sequence)))
 	return r.HandleErr(err, []int{200})
 }
 
@@ -197,33 +200,33 @@ func (i *IpRessource) FwRemoveRule(block IpBlock, ipv4 string, sequence int) err
 // 		* unblocking : in the way to be unblocked (or not)
 // 		* unblocked : blocked in the past
 //
-func (i *IpRessource) SpamGetSpammingIps(block IpBlock, state string) (ips []string, err error) {
+func (c *Client) SpamGetSpammingIPs(block IPBlock, state string) (IPs []string, err error) {
 	uri := fmt.Sprintf("ip/%s/spam", url.QueryEscape(block.IP))
 	if state == "blockedForSpam" || state == "unblocking" || state == "unblocked" {
 		uri = fmt.Sprintf("%s?state=%s", uri, state)
 	}
-	r, err := i.client.Do("GET", uri, "")
+	r, err := c.GET(uri)
 	if err = r.HandleErr(err, []int{200}); err != nil {
 		return
 	}
-	err = json.Unmarshal(r.Body, &ips)
+	err = json.Unmarshal(r.Body, &IPs)
 	return
 }
 
-// SpamGetIp returns detailed info about a spamming IP
-func (i *IpRessource) SpamGetIp(block IpBlock, ipv4 string) (spamIp *SpamIp, err error) {
-	r, err := i.client.Do("GET", "ip/"+url.QueryEscape(block.IP)+"/spam/"+url.QueryEscape(ipv4), "")
+// SpamGetIP returns detailed info about a spamming IP
+func (c *Client) SpamGetIP(block IPBlock, IPv4 string) (spamIP *SpamIP, err error) {
+	r, err := c.GET("ip/" + url.QueryEscape(block.IP) + "/spam/" + url.QueryEscape(IPv4))
 	if err = r.HandleErr(err, []int{200}); err != nil {
 		return
 	}
-	err = json.Unmarshal(r.Body, &spamIp)
+	err = json.Unmarshal(r.Body, &spamIP)
 	return
 }
 
-// SpamGetIpStats returns stats about a spamming IP
-func (i *IpRessource) SpamGetIpStats(block IpBlock, ipv4 string, from time.Time, to time.Time) (spamStats *SpamStats, err error) {
-	uri := fmt.Sprintf("ip/%s/spam/%s/stats?from=%s&to=%s", url.QueryEscape(block.IP), ipv4, url.QueryEscape(from.Format(time.RFC3339)), url.QueryEscape(to.Format(time.RFC3339)))
-	r, err := i.client.Do("GET", uri, "")
+// SpamGetIPStats returns stats about a spamming IP
+func (c *Client) SpamGetIPStats(block IPBlock, IPv4 string, from time.Time, to time.Time) (spamStats *SpamStats, err error) {
+	uri := fmt.Sprintf("ip/%s/spam/%s/stats?from=%s&to=%s", url.QueryEscape(block.IP), IPv4, url.QueryEscape(from.Format(time.RFC3339)), url.QueryEscape(to.Format(time.RFC3339)))
+	r, err := c.GET(uri)
 	if err = r.HandleErr(err, []int{200}); err != nil {
 		return
 	}
@@ -233,24 +236,24 @@ func (i *IpRessource) SpamGetIpStats(block IpBlock, ipv4 string, from time.Time,
 	return
 }
 
-//SpamUnblockSpamIp Unblocks a spamming IP
-func (i *IpRessource) SpamUnblockSpamIp(block IpBlock, ipv4 string) error {
-	r, err := i.client.Do("POST", "ip/"+url.QueryEscape(block.IP)+"/spam/"+url.QueryEscape(ipv4)+"/unblock", "")
+//SpamUnblockSpamIP Unblocks a spamming IP
+func (c *Client) SpamUnblockSpamIP(block IPBlock, IPv4 string) error {
+	r, err := c.POST("ip/"+url.QueryEscape(block.IP)+"/spam/"+url.QueryEscape(IPv4)+"/unblock", "")
 	return r.HandleErr(err, []int{200})
 }
 
 // GetBlockedForSpam returns IPs which are currently blocked for spam
-func (i *IpRessource) GetBlockedForSpam() (ips []string, err error) {
-	ipBlocks, err := i.List("", "", "", "")
+func (c *Client) GetBlockedForSpam() (IPs []string, err error) {
+	IPBlocks, err := c.List("", "", "", "")
 	if err != nil {
 		return
 	}
-	for _, ipb := range ipBlocks {
+	for _, IPb := range IPBlocks {
 		// remove IPv6
-		if len(strings.Split(ipb.IP, ":")) > 1 {
+		if len(strings.Split(IPb.IP, ":")) > 1 {
 			continue
 		}
-		ipsBlocked, err := i.SpamGetSpammingIps(ipb, "blockedForSpam")
+		IPsBlocked, err := c.SpamGetSpammingIPs(IPb, "blockedForSpam")
 		if err != nil {
 			// Not all IP are concerned by spamming status, if not found continue
 			if strings.HasPrefix(err.Error(), "404 This service does not exist") {
@@ -258,11 +261,11 @@ func (i *IpRessource) GetBlockedForSpam() (ips []string, err error) {
 			} else if strings.HasPrefix(err.Error(), "460 This Service is expired") {
 				continue
 			}
-			return ips, err
+			return IPs, err
 		}
-		if len(ipsBlocked) > 0 {
-			for _, i := range ipsBlocked {
-				ips = append(ips, i)
+		if len(IPsBlocked) > 0 {
+			for _, IP := range IPsBlocked {
+				IPs = append(IPs, IP)
 			}
 		}
 	}

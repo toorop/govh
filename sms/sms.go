@@ -4,26 +4,28 @@ import (
 	"encoding/json"
 	"errors"
 	//"fmt"
-	"github.com/toorop/govh"
 	"net/url"
+
+	"github.com/toorop/govh"
 	//"os"
 )
 
-type SmsRessource struct {
-	client *govh.OvhClient
+// Client is a REST client for sms API
+type Client struct {
+	*govh.OVHClient
 }
 
 // New return a new SmsRessource
-func New(client *govh.OvhClient) (*SmsRessource, error) {
+func New(client *govh.OVHClient) (*Client, error) {
 	if client == nil {
 		return nil, errors.New("client is nil")
 	}
-	return &SmsRessource{client: client}, nil
+	return &Client{client}, nil
 }
 
 // ListServices returns availables SMS services
-func (r *SmsRessource) ListServices() (services []string, err error) {
-	resp, err := r.client.Do("GET", "sms", "")
+func (c *Client) ListServices() (services []string, err error) {
+	resp, err := c.GET("sms")
 	if err = resp.HandleErr(err, []int{200}); err != nil {
 		return
 	}
@@ -32,7 +34,7 @@ func (r *SmsRessource) ListServices() (services []string, err error) {
 }
 
 // AddJob send a new SMS
-func (r *SmsRessource) AddJob(serviceName string, job *SendJob) (report SendingReport, err error) {
+func (c *Client) AddJob(serviceName string, job *SendJob) (report SendingReport, err error) {
 	// Default value
 	if job.ValidityPeriod == 0 {
 		job.ValidityPeriod = 2880
@@ -46,7 +48,7 @@ func (r *SmsRessource) AddJob(serviceName string, job *SendJob) (report SendingR
 		return
 	}
 
-	resp, err := r.client.Do("POST", "sms/"+url.QueryEscape(serviceName)+"/jobs", string(payload))
+	resp, err := c.POST("sms/"+url.QueryEscape(serviceName)+"/jobs", string(payload))
 	if err = resp.HandleErr(err, []int{200}); err != nil {
 		return
 	}

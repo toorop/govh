@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// AuthGetConsumerKey returns the consumer key
 func AuthGetConsumerKey(ak, region string) (ck string, link string, err error) {
 	endpoint := API_ENDPOINT_EU
 	if strings.ToLower(region) == "ca" {
@@ -16,7 +17,7 @@ func AuthGetConsumerKey(ak, region string) (ck string, link string, err error) {
 	}
 
 	type response struct {
-		ValidationUrl string
+		ValidationURL string
 		ConsumerKey   string
 		State         string
 	}
@@ -52,6 +53,6 @@ func AuthGetConsumerKey(ak, region string) (ck string, link string, err error) {
 	}
 	resp.Body.Close()
 	ck = jresp.ConsumerKey
-	link = jresp.ValidationUrl
+	link = jresp.ValidationURL
 	return
 }
