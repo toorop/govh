@@ -20,7 +20,7 @@ type OVHClient struct {
 	endpoint string
 }
 
-// NewClient returns an OVH API Client
+// New returns an OVH API Client
 func New(ak string, as string, ck string, region string) (c *OVHClient) {
 	endpoint := API_ENDPOINT_EU
 	if strings.ToLower(region) == "ca" {
@@ -36,15 +36,15 @@ type responseERR struct {
 	Message   string `json:"message"`
 }
 
-// Response represents a response from OVH API
-type Response struct {
+// APIResponse represents a response from OVH API
+type APIResponse struct {
 	StatusCode int
 	Status     string
 	Body       []byte
 }
 
 // HandleErr return error on unexpected HTTP code
-func (r *Response) HandleErr(err error, expectedHTTPCode []int) error {
+func (r *APIResponse) HandleErr(err error, expectedHTTPCode []int) error {
 	if err != nil {
 		return err
 	}
@@ -65,27 +65,30 @@ func (r *Response) HandleErr(err error, expectedHTTPCode []int) error {
 }
 
 // GET do a GET query
-func (c *OVHClient) GET(ressource string) (response Response, err error) {
-	return c.Query("GET", ressource, "")
+func (c *OVHClient) GET(ressource string, expectedHTTPCode ...int) (response APIResponse, err error) {
+	return c.Query("GET", ressource, "", expectedHTTPCode)
 }
 
 // POST do a POST query
-func (c *OVHClient) POST(ressource, payload string) (response Response, err error) {
-	return c.Query("POST", ressource, payload)
+func (c *OVHClient) POST(ressource, payload string, expectedHTTPCode ...int) (APIresponse APIResponse, err error) {
+	return c.Query("POST", ressource, payload, expectedHTTPCode)
 }
 
 // PUT do a PUT query
-func (c *OVHClient) PUT(ressource, payload string) (response Response, err error) {
-	return c.Query("PUT", ressource, payload)
+func (c *OVHClient) PUT(ressource, payload string, expectedHTTPCode ...int) (response APIResponse, err error) {
+	return c.Query("PUT", ressource, payload, expectedHTTPCode)
 }
 
 // DELETE do a GET query
-func (c *OVHClient) DELETE(ressource string) (response Response, err error) {
-	return c.Query("DELETE", ressource, "")
+func (c *OVHClient) DELETE(ressource string, expectedHTTPCode ...int) (response APIResponse, err error) {
+	return c.Query("DELETE", ressource, "", expectedHTTPCode)
 }
 
 // Query process the request & return a response (or error)
-func (c *OVHClient) Query(method string, ressource string, payload string) (response Response, err error) {
+func (c *OVHClient) Query(method string, ressource string, payload string, expectedHTTPCode []int) (response APIResponse, err error) {
+	if len(expectedHTTPCode) == 0 {
+		expectedHTTPCode = []int{200}
+	}
 	query := fmt.Sprintf("%s/%s/%s", c.endpoint, API_VERSION, ressource)
 	req, err := http.NewRequest(method, query, strings.NewReader(payload))
 	if err != nil {
@@ -113,7 +116,20 @@ func (c *OVHClient) Query(method string, ressource string, payload string) (resp
 	response.StatusCode = r.StatusCode
 	response.Status = r.Status
 	response.Body, err = ioutil.ReadAll(r.Body)
-	return
+	for _, code := range expectedHTTPCode {
+		if response.StatusCode == code {
+			return
+		}
+	}
+	// Try to get OVH response about the error
+	if response.Body != nil {
+		var ovhResponse responseERR
+		err = json.Unmarshal(response.Body, &ovhResponse)
+		if err == nil {
+			return response, errors.New(ovhResponse.HTTPCode + ovhResponse.ErrorCode + ovhResponse.Message)
+		}
+	}
+	return response, fmt.Errorf("%d - %s", response.StatusCode, response.Status)
 }
 
 // doTimeoutRequest do a HTTP request with timeout

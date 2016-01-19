@@ -23,30 +23,41 @@ func New(client *govh.OVHClient) (*Client, error) {
 
 // GetPassports returns cloud passports
 func (c *Client) GetPassports() (passports []string, err error) {
-	resp, err := c.GET("cloud")
-	if err = resp.HandleErr(err, []int{200}); err != nil {
+	r, err := c.GET("cloud")
+	if err = r.HandleErr(err, []int{200}); err != nil {
 		return
 	}
-	err = json.Unmarshal(resp.Body, &passports)
+	err = json.Unmarshal(r.Body, &passports)
+	return
+}
+
+// GetPrices return cloud prices
+func (c *Client) GetPrices() (prices GetPriceResponse, err error) {
+	var r govh.APIResponse
+	r, err = c.GET("cloud/price")
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(r.Body, &prices)
 	return
 }
 
 // GetProjects returns clouds projects
 func (c *Client) GetProjectsId() (projectid []string, err error) {
-	resp, err := c.GET("cloud/project")
-	if err = resp.HandleErr(err, []int{200}); err != nil {
+	r, err := c.GET("cloud/project")
+	if err = r.HandleErr(err, []int{200}); err != nil {
 		return
 	}
-	err = json.Unmarshal(resp.Body, &projectid)
+	err = json.Unmarshal(r.Body, &projectid)
 	return
 }
 
 // GetProject return a project
 func (c *Client) GetProject(id string) (p project, err error) {
-	resp, err := c.GET("cloud/project/" + url.QueryEscape(id))
-	if err = resp.HandleErr(err, []int{200}); err != nil {
+	r, err := c.GET("cloud/project/" + url.QueryEscape(id))
+	if err = r.HandleErr(err, []int{200}); err != nil {
 		return
 	}
-	err = json.Unmarshal(resp.Body, &p)
+	err = json.Unmarshal(r.Body, &p)
 	return
 }
