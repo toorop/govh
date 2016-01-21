@@ -46,9 +46,6 @@ func (c *Client) List(filterDesc, filterIP, filterRoutedTo, filterType string) (
 		uri = uri + "?" + strings.Join(args, "&")
 	}
 	r, err := c.GET(uri)
-	if err = r.HandleErr(err, []int{200}); err != nil {
-		return
-	}
 	var ipl = []string{}
 	if err = json.Unmarshal(r.Body, &ipl); err == nil {
 		for _, i := range ipl {
@@ -188,6 +185,25 @@ func (c *Client) FwGetRuleProperties(block IPBlock, IPv4 string, sequence int) (
 func (c *Client) FwRemoveRule(block IPBlock, IPv4 string, sequence int) error {
 	r, err := c.DELETE("ip/" + url.QueryEscape(block.IP) + "/firewall/" + url.QueryEscape(IPv4) + "/rule/" + url.QueryEscape(fmt.Sprintf("%d", sequence)))
 	return r.HandleErr(err, []int{200})
+}
+
+// REVERSE
+
+// GetReverse return reverse of IP ip
+func (c *Client) GetReverse(IP string) (string, error) {
+	r, err := c.GET("ip/" + url.QueryEscape(IP+"/32") + "/reverse/" + url.QueryEscape(IP))
+	if err != nil {
+		return "", err
+	}
+	response := struct {
+		IP      string `json:"ipReverse"`
+		Reverse string `json:"reverse"`
+	}{}
+	err = json.Unmarshal([]byte(r.Body), &response)
+	if err != nil {
+		return "", err
+	}
+	return response.Reverse, err
 }
 
 //
