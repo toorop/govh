@@ -3,10 +3,8 @@ package ip
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/toorop/govh"
 )
@@ -46,15 +44,12 @@ func (c *Client) List(filterDesc, filterIP, filterRoutedTo, filterType string) (
 		uri = uri + "?" + strings.Join(args, "&")
 	}
 	r, err := c.GET(uri)
-	var ipl = []string{}
-	if err = json.Unmarshal(r.Body, &ipl); err == nil {
-		for _, i := range ipl {
-			ips = append(ips, IPBlock{i, filterType})
-		}
-	}
+	err = json.Unmarshal(r.Body, &ips)
+
 	return
 }
 
+/*
 // GetIPProperties return properties of an IP
 func (c *Client) GetIPProperties(IP string) (properties IPProperties, err error) {
 	r, err := c.GET("ip/" + url.QueryEscape(IP))
@@ -78,7 +73,6 @@ func (c *Client) UpdateProperties(IP, desc string) error {
 	return err
 }
 
-/*
 //
 //// LOADBALANCING
 //
@@ -87,7 +81,7 @@ func (c *Client) UpdateProperties(IP, desc string) error {
 func (r *Client) LbList() (resp []byte, err error) {
 	resp, err = r.client.Do("GET", "ip/loadBalancing", "")
 	return
-}*/
+}
 
 //
 //// FIREWALL
@@ -189,28 +183,50 @@ func (c *Client) FwRemoveRule(block IPBlock, IPv4 string, sequence int) error {
 
 // REVERSE
 
+// GetReverseResponse response type for GetReverse
+type GetReverseResponse struct {
+	Reverse string `json:"reverse"`
+}
+
 // GetReverse return reverse of IP ip
-func (c *Client) GetReverse(IP string) (string, error) {
+func (c *Client) GetReverse(IP string) (ReverseIP, error) {
+	RIP := ReverseIP{}
 	r, err := c.GET("ip/" + url.QueryEscape(IP+"/32") + "/reverse/" + url.QueryEscape(IP))
 	if err != nil {
-		return "", err
+		return RIP, err
 	}
-	response := struct {
-		IP      string `json:"ipReverse"`
-		Reverse string `json:"reverse"`
-	}{}
-	err = json.Unmarshal([]byte(r.Body), &response)
+	err = json.Unmarshal([]byte(r.Body), &RIP)
+	return RIP, err
+}
+
+// SetReverse set reverse for IP
+func (c *Client) SetReverse(IP, reverse string) error {
+	payload, err := json.Marshal(ReverseIP{
+		IPReverse: IP,
+		Reverse:   reverse,
+	})
 	if err != nil {
-		return "", err
+		return err
 	}
-	return response.Reverse, err
+	r, err := c.POST("ip/"+url.QueryEscape(IP+"/32")+"/reverse", string(payload))
+	if err != nil {
+		return err
+	}
+	RIP := ReverseIP{}
+	if err = json.Unmarshal([]byte(r.Body), &RIP); err != nil {
+		return err
+	}
+	if RIP.IPReverse != IP || RIP.Reverse != reverse+"." {
+		return fmt.Errorf("returned reverseIP doesn't match reverseIP expected. Expected: %s %s got %s", IP, reverse, RIP.String())
+	}
+	return nil
 }
 
 //
 // SPAM
 //
 
-// SpamGetSpammingIps returns Spamming IP
+// SpamGetSpammingIPs returns Spamming IP
 // state :
 // 		* blockedForSpam : currently blocked
 // 		* unblocking : in the way to be unblocked (or not)
@@ -286,4 +302,4 @@ func (c *Client) GetBlockedForSpam() (IPs []string, err error) {
 		}
 	}
 	return
-}
+}*/

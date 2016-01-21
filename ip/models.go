@@ -1,64 +1,47 @@
 package ip
 
 import (
+	"fmt"
+	"net"
+
 	"github.com/toorop/govh"
 )
 
-// Type OF IP
-var IPType = []string{"cdn", "dedicated", "hosted_ssl", "loadBalancing", "mail", "pcc", "pci", "vpn", "vps", "xdsl"}
+// IPType enumerates each type of IP
+var IPType = [10]string{"cdn", "dedicated", "hosted_ssl", "loadBalancing", "mail", "pcc", "pci", "vpn", "vps", "xdsl"}
 
-/*
-// DateTime represents date as returned by OVH
-type DateTime struct {
-	time.Time
-}
+// IP is a string representation of an IP
+type IP string
 
-func (dt *DateTime) UnmarshalJSON(data []byte) error {
-	var s string
-	if err := json.Unmarshal(data, &s); err != nil {
-		return err
-	}
-	t, err := time.Parse("2006-01-02T15:04:05+02:00", s)
+// IPBlock represents represents OVH ipBlock type
+type IPBlock string
+
+// GetIPs return IPs in IPblocks
+func (i *IPBlock) GetIPs() (IPs []IP, err error) {
+	ip, ipNet, err := net.ParseCIDR(string(*i))
 	if err != nil {
-		return err
+		return
 	}
-	dt.Time = t
-	return nil
-}
-
-func (dt DateTime) MarshalJSON() ([]byte, error) {
-	return json.Marshal((*time.Time)(&dt.Time).Format("2006-01-02T15:04:05+02:00"))
-}
-
-// DateTime2 represents an other date as returned by OVH
-// don't ask me why but OVH use differents TZ for their datetime
-type DateTime2 struct {
-	time.Time
-}
-
-func (dt *DateTime2) UnmarshalJSON(data []byte) error {
-	var s string
-	if err := json.Unmarshal(data, &s); err != nil {
-		return err
+	for ip := ip.Mask(ipNet.Mask); ipNet.Contains(ip); inc(ip) {
+		IPs = append(IPs, IP(ip.String()))
 	}
-	t, err := time.Parse("2006-01-02T15:04:05+01:00", s)
-	if err != nil {
-		return err
+	return
+}
+
+//  http://play.golang.org/p/m8TNTtygK0
+func inc(ip net.IP) {
+	for j := len(ip) - 1; j >= 0; j-- {
+		ip[j]++
+		if ip[j] > 0 {
+			break
+		}
 	}
-	dt.Time = t
-	return nil
 }
 
-func (dt DateTime2) MarshalJSON() ([]byte, error) {
-	return json.Marshal((*time.Time)(&dt.Time).Format("2006-01-02T15:04:05+01:00"))
-}
-*/
-
-// IP
-type IPBlock struct {
+/*type IPBlock struct {
 	IP   string
 	Type string // IpType
-}
+}*/
 
 // IpProperties represents properties of an IP
 type IPProperties struct {
@@ -127,6 +110,17 @@ type FirewallRule struct {
 	CreationDate govh.DateTime `json:"creationDate"`
 	Action       string        `json:"action"`
 	Fragments    bool          `json:"fragments"`
+}
+
+// ReverseIP represents an OVH reverseIp type
+type ReverseIP struct {
+	IPReverse string `json:"ipReverse"`
+	Reverse   string `json:"reverse"`
+}
+
+// String() returns ReverseIP as string
+func (r *ReverseIP) String() string {
+	return fmt.Sprintf("%s %s", r.IPReverse, r.Reverse)
 }
 
 //
