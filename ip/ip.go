@@ -44,22 +44,25 @@ func (c *Client) List(filterDesc, filterIP, filterRoutedTo, filterType string) (
 		uri = uri + "?" + strings.Join(args, "&")
 	}
 	r, err := c.GET(uri)
+	if err != nil {
+		return
+	}
 	err = json.Unmarshal(r.Body, &ips)
+	return
+}
 
+// GetBlockProperties return properties of an IP
+func (c *Client) GetBlockProperties(block IPBlock) (ip IP, err error) {
+	ip = IP{}
+	r, err := c.GET("ip/" + url.QueryEscape(string(block)))
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(r.Body, &ip)
 	return
 }
 
 /*
-// GetIPProperties return properties of an IP
-func (c *Client) GetIPProperties(IP string) (properties IPProperties, err error) {
-	r, err := c.GET("ip/" + url.QueryEscape(IP))
-	if err = r.HandleErr(err, []int{200}); err != nil {
-		return
-	}
-	err = json.Unmarshal(r.Body, &properties)
-	return
-}
-
 // UpdateProperties update IP properties
 func (c *Client) UpdateProperties(IP, desc string) error {
 	payload, err := json.Marshal(IpUpdatableProperties{

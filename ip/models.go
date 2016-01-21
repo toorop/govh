@@ -11,19 +11,19 @@ import (
 var IPType = [10]string{"cdn", "dedicated", "hosted_ssl", "loadBalancing", "mail", "pcc", "pci", "vpn", "vps", "xdsl"}
 
 // IP is a string representation of an IP
-type IP string
+//type IP string
 
 // IPBlock represents represents OVH ipBlock type
 type IPBlock string
 
 // GetIPs return IPs in IPblocks
-func (i *IPBlock) GetIPs() (IPs []IP, err error) {
+func (i *IPBlock) GetIPs() (IPs []string, err error) {
 	ip, ipNet, err := net.ParseCIDR(string(*i))
 	if err != nil {
 		return
 	}
 	for ip := ip.Mask(ipNet.Mask); ipNet.Contains(ip); inc(ip) {
-		IPs = append(IPs, IP(ip.String()))
+		IPs = append(IPs, ip.String())
 	}
 	return
 }
@@ -38,20 +38,36 @@ func inc(ip net.IP) {
 	}
 }
 
-/*type IPBlock struct {
-	IP   string
-	Type string // IpType
-}*/
+// RoutedTo represents ip.routedTo OVH type
+type RoutedTo struct {
+	ServiceName string
+}
+
+// IP represents OVH ip.Ip type
+type IP struct {
+	OrgranisationID string   `json:"organisationId"`
+	Country         string   `json:"country"`
+	RoutedTo        RoutedTo `json:"routedTo"`
+	IPBlock         IPBlock  `json:"ip"`
+	CanBeTerminated bool     `json:"canBeTerminated"`
+	Type            string   `json:"type"`
+	Description     string   `json:"description"`
+}
+
+// String return the string representations of IP
+func (i *IP) String() string {
+	return fmt.Sprintf("Block: %s\nDescription: %s\nRouted To: %s\nType: %s\nCountry:%s\nCan be terminated: %t", i.IPBlock, i.Description, i.RoutedTo.ServiceName, i.Type, i.Country, i.CanBeTerminated)
+}
 
 // IpProperties represents properties of an IP
-type IPProperties struct {
+/*type IPProperties struct {
 	Ip          string `json:"ip,omitempty"`
 	Type        string `json:"type,omitempty"`
 	Description string `json:"description,omitempty"`
 	RoutedTo    struct {
 		ServiceName string `json:"serviceName,omitempty"`
 	} `json:"routedTo,omitempty"`
-}
+}*/
 
 // IpUpdatableProperties represents updatable properties of an IP
 type IpUpdatableProperties struct {
