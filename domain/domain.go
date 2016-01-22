@@ -3,6 +3,7 @@ package domain
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/url"
 	"strings"
 
@@ -36,8 +37,37 @@ func (c *Client) List(whoisOwner ...string) (domains []string, err error) {
 	return
 }
 
+// GetRecordIDsOptions options for Client.GetRecordIDs
+type GetRecordIDsOptions struct {
+	FieldType string
+	SubDomain string
+}
+
 // GetRecordIDs return record ID for the zone zone
-func (c *Client) GetRecordIDs(zone string) (IDs int, err error) {
+func (c *Client) GetRecordIDs(zone string, options GetRecordIDsOptions) (IDs []int, err error) {
+	uri := "domain/zone/" + url.QueryEscape(strings.ToLower(zone)) + "/record"
+	v := url.Values{}
+	if options.FieldType != "" {
+		options.FieldType = strings.ToUpper(options.FieldType)
+		if !IsValidFieldType(options.FieldType) {
+			return IDs, fmt.Errorf("%s is not a valid type", options.FieldType)
+		}
+		v.Add("fieldType", options.FieldType)
+	}
+	if options.SubDomain != "" {
+		v.Add("subDomain", strings.ToLower(options.SubDomain))
+	}
+	params := v.Encode()
+	if params != "" {
+		uri += "?" + params
+	}
+	r, err := c.GET(uri)
+	if err != nil {
+		return
+	}
+	if string(r.Body) != "" {
+		err = json.Unmarshal(r.Body, &IDs)
+	}
 	return
 }
 

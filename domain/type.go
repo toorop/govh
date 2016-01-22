@@ -12,7 +12,6 @@ func IsValidFieldType(t string) bool {
 		}
 	}
 	return true
-
 }
 
 // ZoneRecord represents OVH domain.zone.Record type
