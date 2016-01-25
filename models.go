@@ -13,6 +13,10 @@ type DateTime struct {
 }
 
 func (dt *DateTime) UnmarshalJSON(data []byte) error {
+	if string(data) == "null" {
+		dt.Time = time.Time{}
+		return nil
+	}
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
 		return err

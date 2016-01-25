@@ -106,6 +106,7 @@ func (c *Client) Reboot(serverName string) (task Task, err error) {
 	if err != nil {
 		return
 	}
+	println(string(r.Body))
 	err = json.Unmarshal(r.Body, &task)
 	return
 }
