@@ -27,7 +27,7 @@ type ZoneRecord struct {
 }
 
 // String return ZoneRecord as string
-func (r *ZoneRecord) String() string {
+func (r ZoneRecord) String() string {
 	//123345 toorop.fr A 300 Target
 	out := fmt.Sprintf("%d ", r.ID)
 	if r.SubDomain != "" {

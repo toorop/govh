@@ -39,7 +39,7 @@ type GetPriceResponse struct {
 }
 
 // String return string representation of GetPriceResponse
-func (r *GetPriceResponse) String() string {
+func (r GetPriceResponse) String() string {
 	s := ""
 	// Volumes
 	s += "Volumes (per GB)"
@@ -62,7 +62,6 @@ func (r *GetPriceResponse) String() string {
 		s += "\n\t @ " + r.Region + ":\n\t\t" + r.Price.Text + " " + r.Price.CurrencyCode + " hourly\n\t\t" + r.MonthlyPrice.Text + " " + r.MonthlyPrice.CurrencyCode + " monthly"
 
 	}
-
 	return s
 }
 
