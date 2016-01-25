@@ -1,5 +1,7 @@
 package domain
 
+import "fmt"
+
 // FieldTypes represents supported type for a DNS record
 var FieldTypes = [14]string{"A", "AAAA", "CNAME", "DKIM", "LOC", "MX", "NAPTR", "NS", "PTR", "SPF", "SRV", "SSHFP", "TLSA", "TXT"}
 
@@ -16,10 +18,21 @@ func IsValidFieldType(t string) bool {
 
 // ZoneRecord represents OVH domain.zone.Record type
 type ZoneRecord struct {
-	ID        string `json:"id"`
+	ID        int    `json:"id"`
 	Zone      string `json:"zone"`
 	TTL       int    `json:"ttl"`
 	Target    string `json:"target"`
-	FieldType string `json:"fielType"`
+	FieldType string `json:"fieldType"`
 	SubDomain string `json:"subDomain"`
+}
+
+// String return ZoneRecord as string
+func (r *ZoneRecord) String() string {
+	//123345 toorop.fr A 300 Target
+	out := fmt.Sprintf("%d ", r.ID)
+	if r.SubDomain != "" {
+		out += r.SubDomain + "."
+	}
+	out += fmt.Sprintf("%s %s %d %s", r.Zone, r.FieldType, r.TTL, r.Target)
+	return out
 }

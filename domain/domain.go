@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+	"sync"
 
 	"github.com/toorop/govh"
 )
@@ -37,14 +38,14 @@ func (c *Client) List(whoisOwner ...string) (domains []string, err error) {
 	return
 }
 
-// GetRecordIDsOptions options for Client.GetRecordIDs
-type GetRecordIDsOptions struct {
+// GetRecordsOptions options for Client.GetRecordIDs
+type GetRecordsOptions struct {
 	FieldType string
 	SubDomain string
 }
 
 // GetRecordIDs return record ID for the zone zone
-func (c *Client) GetRecordIDs(zone string, options GetRecordIDsOptions) (IDs []int, err error) {
+func (c *Client) GetRecordIDs(zone string, options GetRecordsOptions) (IDs []int, err error) {
 	uri := "domain/zone/" + url.QueryEscape(strings.ToLower(zone)) + "/record"
 	v := url.Values{}
 	if options.FieldType != "" {
@@ -73,5 +74,50 @@ func (c *Client) GetRecordIDs(zone string, options GetRecordIDsOptions) (IDs []i
 
 // GetRecordByID return a ZoneRecord by its ID
 func (c *Client) GetRecordByID(zone string, ID int) (record ZoneRecord, err error) {
+	record = ZoneRecord{}
+	r, err := c.GET("domain/zone/" + url.QueryEscape(strings.ToLower(zone)) + "/record/" + fmt.Sprintf("%d", ID))
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(r.Body, &record)
+	return
+}
+
+// GetRecords returns record(s) for zone filtered by filedType
+func (c *Client) GetRecords(zone string, options GetRecordsOptions) (records []ZoneRecord, err error) {
+	IDs, err := c.GetRecordIDs(zone, options)
+	if err != nil {
+		return
+	}
+	var wg sync.WaitGroup
+	errChan := make(chan error, 1)
+	doneChan := make(chan int)
+
+	for _, ID := range IDs {
+		//log.Println("range", ID)
+		wg.Add(1)
+		go func(id int) {
+			defer wg.Done()
+			record, err := c.GetRecordByID(zone, id)
+			if err != nil {
+				errChan <- err
+				return
+			}
+			records = append(records, record)
+		}(ID)
+	}
+
+	go func() {
+		wg.Wait()
+		doneChan <- 1
+	}()
+
+	select {
+	case err = <-errChan:
+		return []ZoneRecord{}, err
+
+	case <-doneChan:
+		break
+	}
 	return
 }
