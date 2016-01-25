@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
-	"strconv"
 
 	"github.com/toorop/govh"
 )
@@ -96,19 +95,17 @@ func (c *Client) GetTask(serverName string, taskID int) (task Task, err error) {
 }
 
 // CancelTask cancels a task
-func (c *Client) CancelTask(serverName string, taskID uint64) (err error) {
-	_, err = c.POST("dedicated/server/"+url.QueryEscape(serverName)+"/task/"+url.QueryEscape(strconv.FormatUint(taskID, 10))+"/cancel", "")
+func (c *Client) CancelTask(serverName string, taskID int) (err error) {
+	_, err = c.POST("dedicated/server/"+url.QueryEscape(serverName)+"/task/"+fmt.Sprintf("%d", taskID)+"/cancel", "")
 	return
 }
 
-/*
-// Reboot reboot server
+// Reboot reboot server serverName
 func (c *Client) Reboot(serverName string) (task Task, err error) {
 	r, err := c.POST("dedicated/server/"+url.QueryEscape(serverName)+"/reboot", "")
-	if err = r.HandleErr(err, []int{200}); err != nil {
+	if err != nil {
 		return
 	}
 	err = json.Unmarshal(r.Body, &task)
 	return
 }
-*/
