@@ -121,3 +121,43 @@ func (c *Client) GetRecords(zone string, options GetRecordsOptions) (records []Z
 	}
 	return
 }
+
+// NewRecord creates a new record for zone
+func (c *Client) NewRecord(zr ZoneRecord) (record ZoneRecord, err error) {
+	payloadRaw := struct {
+		TTL       int    `json:"ttl"`
+		Target    string `json:"target"`
+		FieldType string `json:"fieldType"`
+		SubDomain string `json:"subDomain"`
+	}{
+		TTL:       zr.TTL,
+		Target:    zr.Target,
+		FieldType: zr.FieldType,
+		SubDomain: zr.SubDomain,
+	}
+
+	payload, err := json.Marshal(payloadRaw)
+	if err != nil {
+		return
+	}
+
+	r, err := c.POST("domain/zone/"+url.QueryEscape(zr.Zone)+"/record", string(payload))
+	if err != nil {
+		return
+	}
+
+	err = json.Unmarshal(r.Body, &record)
+	return
+
+}
+
+// DeleteRecord deletes a record
+func (c *Client) DeleteRecord(zone string, ID int) error {
+	_, err := c.DELETE("domain/zone/" + url.QueryEscape(zone) + "/record/" + fmt.Sprintf("%d", ID))
+	return err
+}
+
+// ActivateZone activate zone zone
+func (c *Client) ActivateZone(zone string) error {
+	return nil
+}
