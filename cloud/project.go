@@ -3,10 +3,8 @@ package cloud
 import (
 	"encoding/json"
 	"errors"
-	//"fmt"
+	"fmt"
 	"time"
-
-	//"github.com/toorop/govh"
 )
 
 // projectStatus represents the status of a project
@@ -33,17 +31,29 @@ func (status projectStatus) String() string {
 	return "unknow"
 }
 
-// project represents a cloud project
-type project struct {
-	Id           string
+// Project represents a cloud project
+type Project struct {
+	ID           string
 	CreationDate time.Time
 	Status       projectStatus
 	Description  string
 }
 
-func (p *project) UnmarshalJSON(data []byte) (err error) {
+// project stringer
+func (p Project) String() string {
+	out := fmt.Sprintf("ID: %s\n", p.ID)
+	out += fmt.Sprintf("Status: %s\n", p.Status)
+	out += fmt.Sprintf("Creation date: %s\n", p.CreationDate.Format(time.RFC3339))
+	out += fmt.Sprintf("Description: %s\n", p.Description)
+	return out
+
+}
+
+// UnmarshalJSON is an unmarshaller
+// TODO: refactor
+func (p *Project) UnmarshalJSON(data []byte) (err error) {
 	type resp struct {
-		Id           string `json:"project_id"`
+		ID           string `json:"project_id"`
 		CreationDate string `json:"creationDate"`
 		Status       string `json:"status"`
 		Description  string `json:"description"`
@@ -53,7 +63,7 @@ func (p *project) UnmarshalJSON(data []byte) (err error) {
 	if err := json.Unmarshal(data, &rp); err != nil {
 		return err
 	}
-	p.Id = rp.Id
+	p.ID = rp.ID
 	// 2015-05-06T20:20:26+02:00
 	p.CreationDate, err = time.Parse(time.RFC3339, rp.CreationDate)
 	if err != nil {

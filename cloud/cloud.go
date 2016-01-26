@@ -42,20 +42,20 @@ func (c *Client) GetPrices() (prices GetPriceResponse, err error) {
 	return
 }
 
-// GetProjects returns clouds projects
-func (c *Client) GetProjectsId() (projectid []string, err error) {
+// GetProjectIDs returns clouds projects IDs
+func (c *Client) GetProjectIDs() (projectIDs []string, err error) {
 	r, err := c.GET("cloud/project")
-	if err = r.HandleErr(err, []int{200}); err != nil {
+	if err != nil {
 		return
 	}
-	err = json.Unmarshal(r.Body, &projectid)
+	err = json.Unmarshal(r.Body, &projectIDs)
 	return
 }
 
 // GetProject return a project
-func (c *Client) GetProject(id string) (p project, err error) {
+func (c *Client) GetProject(id string) (p Project, err error) {
 	r, err := c.GET("cloud/project/" + url.QueryEscape(id))
-	if err = r.HandleErr(err, []int{200}); err != nil {
+	if err != nil {
 		return
 	}
 	err = json.Unmarshal(r.Body, &p)
