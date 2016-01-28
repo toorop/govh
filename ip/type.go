@@ -59,16 +59,6 @@ func (i IP) String() string {
 	return fmt.Sprintf("Block: %s\nDescription: %s\nRouted To: %s\nType: %s\nCountry:%s\nCan be terminated: %t", i.IPBlock, i.Description, i.RoutedTo.ServiceName, i.Type, i.Country, i.CanBeTerminated)
 }
 
-// IpProperties represents properties of an IP
-/*type IPProperties struct {
-	Ip          string `json:"ip,omitempty"`
-	Type        string `json:"type,omitempty"`
-	Description string `json:"description,omitempty"`
-	RoutedTo    struct {
-		ServiceName string `json:"serviceName,omitempty"`
-	} `json:"routedTo,omitempty"`
-}*/
-
 // IpUpdatableProperties represents updatable properties of an IP
 type IpUpdatableProperties struct {
 	Description string `json:"description,omitempty"`
@@ -143,16 +133,24 @@ func (r ReverseIP) String() string {
 //// SPAM
 //
 
-// SpamIp
+// SpamIP represents an OVH ip.SpamIp type
 type SpamIP struct {
-	Time       uint32        `json:"time"`       // Time (in seconds) while the IP will be blocked
-	Date       govh.DateTime `json:"date"`       // Last date the ip was blocked
-	IpSpamming string        `json:"ipSpamming"` // IP address which is sending spam
-	State      string        `json:"state"`      // Current state of the ip. blockedForSpam | unblocked | unblocking
+	IP    string        `json:"ipSpamming"` // IP address which is sending spam
+	Time  int           `json:"time"`       // Time (in seconds) while the IP will be blocked
+	Date  govh.DateTime `json:"date"`       // Last date the ip was blocked
+	State string        `json:"state"`      // Current state of the ip. blockedForSpam | unblocked | unblocking
 }
 
-// SpamTarget
-// Spam's target information
+// Stringer
+func (s SpamIP) String() string {
+	out := "IP: " + s.IP + "\n"
+	out += fmt.Sprintf("Blocked since: %d seconds\n", s.Time)
+	out += fmt.Sprintf("Last blocked: %v\n", s.Date)
+	out += "state: " + s.State + "\n"
+	return out
+}
+
+// SpamTarget Spam's target information
 type SpamTarget struct {
 	DestinationIp string `json:"destinationIp"` // IP address of the target
 	MessageId     string `json:"messageId"`     // The message-id of the email
@@ -161,8 +159,7 @@ type SpamTarget struct {
 	Spamscore uint `json:"spamscore"` // Spam score of the email
 }
 
-// SpamStats
-// Spam statistics about an IP address
+// SpamStats Spam statistics about an IP address
 type SpamStats struct {
 	Timestamp        int64 `json:"timestamp"` // Time when the IP address was blocked
 	DetectedSpams    []SpamTarget
