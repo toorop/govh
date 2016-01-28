@@ -23,10 +23,10 @@ func New(client *govh.OVHClient) (*Client, error) {
 	return &Client{client}, nil
 }
 
-// ListServices returns availables SMS services
-func (c *Client) ListServices() (services []string, err error) {
+// GetServices returns availables SMS services
+func (c *Client) GetServices() (services []string, err error) {
 	resp, err := c.GET("sms")
-	if err = resp.HandleErr(err, []int{200}); err != nil {
+	if err != nil {
 		return
 	}
 	err = json.Unmarshal(resp.Body, &services)
@@ -49,7 +49,7 @@ func (c *Client) AddJob(serviceName string, job *SendJob) (report SendingReport,
 	}
 
 	resp, err := c.POST("sms/"+url.QueryEscape(serviceName)+"/jobs", string(payload))
-	if err = resp.HandleErr(err, []int{200}); err != nil {
+	if err != nil {
 		return
 	}
 	err = json.Unmarshal(resp.Body, &report)

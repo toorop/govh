@@ -24,7 +24,7 @@ func New(client *govh.OVHClient) (*Client, error) {
 // GetPassports returns cloud passports
 func (c *Client) GetPassports() (passports []string, err error) {
 	r, err := c.GET("cloud")
-	if err = r.HandleErr(err, []int{200}); err != nil {
+	if err != nil {
 		return
 	}
 	err = json.Unmarshal(r.Body, &passports)
