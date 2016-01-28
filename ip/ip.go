@@ -3,6 +3,7 @@ package ip
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/url"
 	"strings"
 
@@ -21,6 +22,8 @@ func New(client *govh.OVHClient) (*Client, error) {
 	}
 	return &Client{client}, nil
 }
+
+// IPBlock
 
 // List return a slice of IpBlock
 func (c *Client) List(filterDesc, filterIP, filterRoutedTo, filterType string) (ips []IPBlock, err error) {
@@ -62,9 +65,8 @@ func (c *Client) GetBlockProperties(block IPBlock) (ip IP, err error) {
 	return
 }
 
-/*
-// UpdateProperties update IP properties
-func (c *Client) UpdateProperties(IP, desc string) error {
+// UpdateBlockProperties update IP properties
+func (c *Client) UpdateBlockProperties(IP, desc string) error {
 	payload, err := json.Marshal(IpUpdatableProperties{
 		Description: desc,
 	})
@@ -76,6 +78,9 @@ func (c *Client) UpdateProperties(IP, desc string) error {
 	return err
 }
 
+// IPs
+
+/*
 //
 //// LOADBALANCING
 //
@@ -183,27 +188,23 @@ func (c *Client) FwRemoveRule(block IPBlock, IPv4 string, sequence int) error {
 	r, err := c.DELETE("ip/" + url.QueryEscape(block.IP) + "/firewall/" + url.QueryEscape(IPv4) + "/rule/" + url.QueryEscape(fmt.Sprintf("%d", sequence)))
 	return r.HandleErr(err, []int{200})
 }
-
+*/
 // REVERSE
 
-// GetReverseResponse response type for GetReverse
-type GetReverseResponse struct {
-	Reverse string `json:"reverse"`
-}
-
 // GetReverse return reverse of IP ip
-func (c *Client) GetReverse(IP string) (ReverseIP, error) {
+func (c *Client) GetReverse(IP string) (string, error) {
 	RIP := ReverseIP{}
 	r, err := c.GET("ip/" + url.QueryEscape(IP+"/32") + "/reverse/" + url.QueryEscape(IP))
 	if err != nil {
-		return RIP, err
+		return "", err
 	}
 	err = json.Unmarshal([]byte(r.Body), &RIP)
-	return RIP, err
+	return RIP.Reverse, err
 }
 
-// SetReverse set reverse for IP
+// SetReverse set the reverse of an IP
 func (c *Client) SetReverse(IP, reverse string) error {
+
 	payload, err := json.Marshal(ReverseIP{
 		IPReverse: IP,
 		Reverse:   reverse,
@@ -224,6 +225,8 @@ func (c *Client) SetReverse(IP, reverse string) error {
 	}
 	return nil
 }
+
+/*
 
 //
 // SPAM
