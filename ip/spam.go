@@ -2,7 +2,10 @@ package ip
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/url"
+	"strings"
+	"time"
 )
 
 //
@@ -38,24 +41,20 @@ func (c *Client) SpamGetIP(block IPBlock, IP string) (spamIP SpamIP, err error) 
 	return
 }
 
-/*
 // SpamGetIPStats returns stats about a spamming IP
-func (c *Client) SpamGetIPStats(block IPBlock, IPv4 string, from time.Time, to time.Time) (spamStats *SpamStats, err error) {
-	uri := fmt.Sprintf("ip/%s/spam/%s/stats?from=%s&to=%s", url.QueryEscape(block.IP), IPv4, url.QueryEscape(from.Format(time.RFC3339)), url.QueryEscape(to.Format(time.RFC3339)))
-	r, err := c.GET(uri)
-	if err = r.HandleErr(err, []int{200}); err != nil {
+func (c *Client) SpamGetIPStats(block IPBlock, IP string, from time.Time, to time.Time) (spamStats []SpamStats, err error) {
+	r, err := c.GET(fmt.Sprintf("ip/%s/spam/%s/stats?from=%s&to=%s", url.QueryEscape(string(block)), url.QueryEscape(IP), url.QueryEscape(from.Format(time.RFC3339)), url.QueryEscape(to.Format(time.RFC3339))))
+	if err != nil {
 		return
 	}
-	if len(r.Body) > 2 {
-		err = json.Unmarshal(r.Body[1:len(r.Body)-1], &spamStats)
-	}
+	err = json.Unmarshal(r.Body, &spamStats)
 	return
 }
 
 //SpamUnblockSpamIP Unblocks a spamming IP
-func (c *Client) SpamUnblockSpamIP(block IPBlock, IPv4 string) error {
-	r, err := c.POST("ip/"+url.QueryEscape(block.IP)+"/spam/"+url.QueryEscape(IPv4)+"/unblock", "")
-	return r.HandleErr(err, []int{200})
+func (c *Client) SpamUnblockSpamIP(block IPBlock, IP string) error {
+	_, err := c.POST("ip/"+url.QueryEscape(string(block))+"/spam/"+url.QueryEscape(IP)+"/unblock", "")
+	return err
 }
 
 // GetBlockedForSpam returns IPs which are currently blocked for spam
@@ -64,12 +63,12 @@ func (c *Client) GetBlockedForSpam() (IPs []string, err error) {
 	if err != nil {
 		return
 	}
-	for _, IPb := range IPBlocks {
+	for _, block := range IPBlocks {
 		// remove IPv6
-		if len(strings.Split(IPb.IP, ":")) > 1 {
+		if len(strings.Split(string(block), ":")) > 1 {
 			continue
 		}
-		IPsBlocked, err := c.SpamGetSpammingIPs(IPb, "blockedForSpam")
+		IPsBlocked, err := c.SpamGetIPs(block, "blockedForSpam")
 		if err != nil {
 			// Not all IP are concerned by spamming status, if not found continue
 			if strings.HasPrefix(err.Error(), "404 This service does not exist") {
@@ -79,11 +78,9 @@ func (c *Client) GetBlockedForSpam() (IPs []string, err error) {
 			}
 			return IPs, err
 		}
-		if len(IPsBlocked) > 0 {
-			for _, IP := range IPsBlocked {
-				IPs = append(IPs, IP)
-			}
+		for _, IP := range IPsBlocked {
+			IPs = append(IPs, IP)
 		}
 	}
 	return
-}*/
+}

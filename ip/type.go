@@ -3,6 +3,7 @@ package ip
 import (
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/toorop/govh"
 )
@@ -150,20 +151,44 @@ func (s SpamIP) String() string {
 	return out
 }
 
-// SpamTarget Spam's target information
+// SpamTarget represents an OVH ip.SpamTarget type
 type SpamTarget struct {
-	DestinationIp string `json:"destinationIp"` // IP address of the target
-	MessageId     string `json:"messageId"`     // The message-id of the email
+	DestinationIP string `json:"destinationIp"` // IP address of the target
+	MessageID     string `json:"messageId"`     // The message-id of the email
 	Date          int64  `json:"date"`          // Timestamp when the email was sent
+	Spamscore     int    `json:"spamscore"`     // Spam score of the email
 	//Spamcause     string `json:"spamcause"`     // Detailled spam cause
-	Spamscore uint `json:"spamscore"` // Spam score of the email
 }
 
-// SpamStats Spam statistics about an IP address
+// SpamTarget stringer
+func (s SpamTarget) String() string {
+	out := "Destination: " + s.DestinationIP + "\n"
+	out += "Date: " + time.Unix(s.Date, 0).String() + "\n"
+	out += "Message-id: " + s.MessageID + "\n"
+	out += fmt.Sprintf("Score: %d\n", s.Spamscore)
+	return out
+}
+
+// SpamStats represents an OVH ip.SpamStats type
 type SpamStats struct {
 	Timestamp        int64 `json:"timestamp"` // Time when the IP address was blocked
 	DetectedSpams    []SpamTarget
 	AverageSpamScore int `json:"averageSpamscore"` // Average spam score.
 	Total            int `json:"total"`            // Number of emails sent
 	NumberOfSpams    int `json:"numberOfSpams"`    //Number of spams sent
+}
+
+// SpamStats stringer
+func (s SpamStats) String() string {
+	out := "Blocked: " + time.Unix(s.Timestamp, 0).String() + "\n"
+	out += fmt.Sprintf("Email total: %d\n", s.Total)
+	out += fmt.Sprintf("Number of spams: %d\n", s.NumberOfSpams)
+	out += fmt.Sprintf("Average score: %d\n", s.AverageSpamScore)
+	if len(s.DetectedSpams) != 0 {
+		out += "Spams:\n"
+		for _, spam := range s.DetectedSpams {
+			out += spam.String()
+		}
+	}
+	return out
 }
