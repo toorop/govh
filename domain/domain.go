@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -140,12 +141,10 @@ func (c *Client) NewRecord(zr ZoneRecord) (record ZoneRecord, err error) {
 	if err != nil {
 		return
 	}
-
 	r, err := c.POST("domain/zone/"+url.QueryEscape(zr.Zone)+"/record", string(payload))
 	if err != nil {
 		return
 	}
-
 	err = json.Unmarshal(r.Body, &record)
 	return
 
@@ -155,6 +154,30 @@ func (c *Client) NewRecord(zr ZoneRecord) (record ZoneRecord, err error) {
 func (c *Client) DeleteRecord(zone string, ID int) error {
 	_, err := c.DELETE("domain/zone/" + url.QueryEscape(zone) + "/record/" + fmt.Sprintf("%d", ID))
 	return err
+}
+
+// GetZoneFile returns zone as string (Bind format)
+func (c *Client) GetZoneFile(zone string) (string, error) {
+	r, err := c.GET("domain/zone/" + url.QueryEscape(zone) + "/export")
+	zoneFile := r.Body[1 : len(r.Body)-1]
+	zoneFile = bytes.Replace(zoneFile, []byte{92, 110}, []byte{10}, -1)
+	zoneFile = bytes.Replace(zoneFile, []byte{92, 116}, []byte{9}, -1)
+	zoneFile = bytes.Replace(zoneFile, []byte{92, 34}, []byte{34}, -1)
+	return string(zoneFile), err
+}
+
+// PutZoneFile export zone as file (Bind formated)
+func (c *Client) PutZoneFile(zone, zoneFile string) (task ZoneTask, err error) {
+	zoneFile = strings.Replace(zoneFile, `"`, `\"`, -1)
+	zoneFile = strings.Replace(zoneFile, "\n", "\\n", -1)
+	zoneFile = strings.Replace(zoneFile, "\t", "\\t", -1)
+	zoneFile = `{"zoneFile": "` + zoneFile + `"}`
+	r, err := c.POST("domain/zone/"+url.QueryEscape(zone)+"/import", zoneFile)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(r.Body, &task)
+	return
 }
 
 // ActivateZone activate zone zone
