@@ -61,3 +61,8 @@ func (c *Client) GetProject(id string) (p Project, err error) {
 	err = json.Unmarshal(r.Body, &p)
 	return
 }
+
+// GetInstances return instance of project projectID
+func (c *Client) GetInstances(projectID string) (instances []Instance, err error) {
+	return
+}
