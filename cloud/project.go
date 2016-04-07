@@ -11,21 +11,21 @@ import (
 type projectStatus int
 
 const (
-	CREATING projectStatus = 1 + iota
-	DELETING
-	OK
-	SUSPENDED
+	ProjectStatusCreating projectStatus = 1 + iota
+	ProjectStatusDeleting
+	ProjectStatusOK
+	ProjectStatusSuspended
 )
 
 func (status projectStatus) String() string {
 	switch status {
-	case CREATING:
+	case ProjectStatusCreating:
 		return "creating"
-	case DELETING:
+	case ProjectStatusDeleting:
 		return "deleting"
-	case OK:
+	case ProjectStatusOK:
 		return "ok"
-	case SUSPENDED:
+	case ProjectStatusSuspended:
 		return "suspended"
 	}
 	return "unknow"
@@ -72,13 +72,13 @@ func (p *Project) UnmarshalJSON(data []byte) (err error) {
 
 	switch rp.Status {
 	case "creating":
-		p.Status = CREATING
+		p.Status = ProjectStatusCreating
 	case "deleting":
-		p.Status = DELETING
+		p.Status = ProjectStatusDeleting
 	case "ok":
-		p.Status = OK
+		p.Status = ProjectStatusOK
 	case "suspended":
-		p.Status = SUSPENDED
+		p.Status = ProjectStatusSuspended
 	default:
 		return errors.New("unknow project status: " + rp.Status)
 	}

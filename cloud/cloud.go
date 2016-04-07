@@ -64,5 +64,10 @@ func (c *Client) GetProject(id string) (p Project, err error) {
 
 // GetInstances return instance of project projectID
 func (c *Client) GetInstances(projectID string) (instances []Instance, err error) {
+	r, err := c.GET("cloud/project/" + url.QueryEscape(projectID) + "/instance")
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(r.Body, &instances)
 	return
 }
