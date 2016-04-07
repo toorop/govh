@@ -22,10 +22,7 @@ type OVHClient struct {
 
 // New returns an OVH API Client
 func New(ak string, as string, ck string, region string) (c *OVHClient) {
-	endpoint := API_ENDPOINT_EU
-	if strings.ToLower(region) == "ca" {
-		endpoint = API_ENDPOINT_CA
-	}
+	endpoint := RegionEndpoint(region)
 	return &OVHClient{&http.Client{}, ak, as, ck, endpoint}
 }
 
@@ -83,7 +80,6 @@ func (c *OVHClient) PUT(ressource, payload string, expectedHTTPCode ...int) (res
 func (c *OVHClient) DELETE(ressource string, expectedHTTPCode ...int) (response APIResponse, err error) {
 	return c.Query("DELETE", ressource, "", expectedHTTPCode)
 }
-
 // Query process the request & return a response (or error)
 func (c *OVHClient) Query(method string, ressource string, payload string, expectedHTTPCode []int) (response APIResponse, err error) {
 	if len(expectedHTTPCode) == 0 {
