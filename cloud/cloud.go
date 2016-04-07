@@ -3,6 +3,7 @@ package cloud
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/url"
 
 	"github.com/toorop/govh"
@@ -69,5 +70,16 @@ func (c *Client) GetInstances(projectID string) (instances []Instance, err error
 		return
 	}
 	err = json.Unmarshal(r.Body, &instances)
+	return
+}
+
+// GetSnapshots return snapshots( private image) of project projectID
+func (c *Client) GetSnapshots(projectID string) (images []Image, err error) {
+	r, err := c.GET("cloud/project/" + url.QueryEscape(projectID) + "/snapshot")
+	if err != nil {
+		return
+	}
+	fmt.Println(string(r.Body))
+	err = json.Unmarshal(r.Body, &images)
 	return
 }
