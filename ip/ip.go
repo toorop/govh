@@ -78,8 +78,50 @@ func (c *Client) UpdateBlockProperties(block IPBlock, desc string) error {
 	return err
 }
 
-// IPs
+// Change IPBlock destination
+func (c *Client) Move(block IPBlock, toServiceName string) (*IpTask,error) {
+	iptask := IpTask{}
+	payload, err := json.Marshal(MoveTo{
+		To: toServiceName,
+	})
 
+	if err != nil {
+		return nil,err
+	}
+	r, err := c.POST("ip/"+url.QueryEscape(string(block))+"/move", string(payload))
+	err = r.HandleErr(err, []int{200})
+
+	if err != nil {
+		return nil,err
+	}
+
+	err = json.Unmarshal(r.Body, &iptask)
+
+	if err != nil {
+		return nil,err
+	}
+	return &iptask,err
+}
+
+// Get IpTask
+func (c *Client) Task(block IPBlock, taskid IPTaskId) (*IpTask,error) {
+	iptask := IpTask{}
+	r, err := c.GET("ip/"+url.QueryEscape(string(block))+fmt.Sprintf("/task/%d",taskid))
+
+	if err != nil {
+		return nil,err
+	}
+
+	err = json.Unmarshal(r.Body, &iptask)
+
+	if err != nil {
+		return nil,err
+	}
+
+	return &iptask,nil
+}
+
+// IPs
 /*
 //
 //// LOADBALANCING

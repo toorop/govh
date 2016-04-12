@@ -44,6 +44,28 @@ type RoutedTo struct {
 	ServiceName string
 }
 
+// MoveTo represents move property of an IP
+type MoveTo struct {
+	To string `json:"to"`
+}
+
+type IPTaskId int
+
+// IpTask represents a task on an IP (answer of MoveTo)
+type IpTask struct {
+	TaskID      IPTaskId `json:"taskId"`
+	Function    string   `json:"function"`
+	LastUpdate  string   `json:"lastUpdate"`
+	Comment     string   `json:"comment"`
+	Status      string   `json:"status"`
+	StartDate   string   `json:"startDate"`
+	DoneDate    string   `json:"doneDate"`
+}
+
+func (it IpTask) String() string {
+	return fmt.Sprintf("Task: %d\nFunction: %s\nComment: %s\nStatus: %s\nStart Date: %s\nDone Date: %s\n", it.TaskID, it.Function, it.Comment, it.Status, it.StartDate, it.DoneDate)
+}
+
 // IP represents OVH ip.Ip type
 type IP struct {
 	OrgranisationID string   `json:"organisationId"`
