@@ -11,10 +11,7 @@ import (
 
 // AuthGetConsumerKey returns the consumer key
 func AuthGetConsumerKey(ak, region string) (ck string, link string, err error) {
-	endpoint := API_ENDPOINT_EU
-	if strings.ToLower(region) == "ca" {
-		endpoint = API_ENDPOINT_CA
-	}
+	endpoint := RegionEndpoint(region)
 
 	type response struct {
 		ValidationURL string
