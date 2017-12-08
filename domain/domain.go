@@ -180,6 +180,12 @@ func (c *Client) PutZoneFile(zone, zoneFile string) (task ZoneTask, err error) {
 	return
 }
 
+// RefreshZone apply zone modification on DNS servers
+func (c *Client) RefreshZone(zone string) error {
+	_, err := c.POST("domain/zone/"+url.QueryEscape(zone)+"/refresh", "")
+	return err
+}
+
 // ActivateZone activate zone zone
 func (c *Client) ActivateZone(zone string) error {
 	return nil

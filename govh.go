@@ -8,7 +8,7 @@ import (
 const (
 	//API_HOST        = "api.ovh.com"
 	API_ENDPOINT_EU = "https://api.ovh.com"
-	API_ENDPOINT_CA = "https:///ca.api.ovh.com"
+	API_ENDPOINT_CA = "https://ca.api.ovh.com"
 	API_ENDPOINT_SYS_EU = "https://eu.api.soyoustart.com"
 	API_ENDPOINT_SYS_CA = "https://ca.api.soyoustart.com"
 	API_VERSION     = "1.0"
