@@ -3,6 +3,7 @@ package me
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/url"
 	"time"
 
@@ -20,6 +21,17 @@ func New(client *govh.OVHClient) (*Client, error) {
 		return nil, errors.New("client is nil")
 	}
 	return &Client{client}, nil
+}
+
+// GetMe return User from GET /me
+func (c *Client) GetMe() (user User, err error) {
+	r, err := c.GET("me")
+	if err != nil {
+		return
+	}
+	log.Println(string(r.Body))
+	err = json.Unmarshal(r.Body, &user)
+	return
 }
 
 // GetBillIDs return IDs of bill from dateFrom to dateTo

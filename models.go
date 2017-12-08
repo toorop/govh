@@ -13,7 +13,7 @@ type DateTime struct {
 }
 
 func (dt *DateTime) UnmarshalJSON(data []byte) error {
-	if string(data) == "null" {
+	if string(data) == "null" || string(data) == "\"\"" {
 		dt.Time = time.Time{}
 		return nil
 	}
@@ -36,12 +36,16 @@ func (dt DateTime) MarshalJSON() ([]byte, error) {
 }
 
 // DateTime2 represents an other date as returned by OVH
-// don't ask me why but OVH use differents TZ for their datetime
+// don't ask me why but OVH use differents TZ for datetime...
 type DateTime2 struct {
 	time.Time
 }
 
 func (dt *DateTime2) UnmarshalJSON(data []byte) error {
+	if string(data) == "null" || string(data) == "\"\"" {
+		dt.Time = time.Time{}
+		return nil
+	}
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
 		return err
